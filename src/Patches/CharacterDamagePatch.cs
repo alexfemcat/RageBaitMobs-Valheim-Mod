@@ -38,13 +38,16 @@ namespace RagebateMobs.Patches
             string prompt = PromptBuilder.BuildInsultPrompt(mobName, "took_damage", playerName);
 
             RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mob);
+            RagebateMobsPlugin.Logger.LogDebug($"[Ragebait] {mobName} took damage from {playerName}, generating roast");
 
-            RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
-            {
-                var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
-                if (!string.IsNullOrWhiteSpace(insult))
-                    RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
-            });
+            // Log that mob has taken damage from player
+RagebateMobsPlugin.Logger.LogDebug($"[Ragebait] {mobName} took damage from {playerName}");
+RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
+{
+    var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
+    if (!string.IsNullOrWhiteSpace(insult))
+        RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
+});
         }
     }
 }

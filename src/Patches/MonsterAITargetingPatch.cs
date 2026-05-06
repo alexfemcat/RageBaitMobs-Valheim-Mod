@@ -47,7 +47,9 @@ namespace RagebateMobs.Patches
             string playerName = (target as Player)?.GetPlayerName() ?? "player";
             string prompt = PromptBuilder.BuildInsultPrompt(mobName, "spotted_player", playerName);
 
-            RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} taunting {playerName}...");
+            // Log that mob has spotted player
+RagebateMobsPlugin.Logger.LogDebug($"[Ragebait] {mobName} spotted {playerName}");
+RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} taunting {playerName}...");
 
             RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
             {

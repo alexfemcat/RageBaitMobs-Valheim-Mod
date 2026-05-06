@@ -22,6 +22,11 @@ namespace RagebateMobs.Services
             _logger = logger;
         }
 
+        public async Task<string> GenerateInsultAsync(string prompt)
+        {
+            return await GetResponseAsync(prompt);
+        }
+
         public async Task<string> GetResponseAsync(string prompt, int? retries = null)
         {
             try
