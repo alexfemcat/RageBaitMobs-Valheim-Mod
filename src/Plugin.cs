@@ -33,10 +33,7 @@ namespace RagebateMobs
             {
                 Config = new ModConfig(base.Config);
                 LLMService = new LLMService(Config.LMStudioApiUrl.Value, Logger);
-                CooldownManager = new CooldownManager(
-                    Config.GlobalCooldownSeconds.Value,
-                    Config.PerMobCooldownSeconds.Value
-                );
+                CooldownManager = new CooldownManager(Config.PerMobCooldownSeconds.Value);
                 OutputManager = new OutputManager(Config, Logger);
                 TaskManager = new TaskManager(Logger);
 

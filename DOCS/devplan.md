@@ -64,9 +64,9 @@
 
 ### Cooldown Manager
 - [x] Create `src/Managers/CooldownManager.cs` with:
-  - [x] Global cooldown: 8 seconds (any mob speaking resets timer)
-  - [x] Per-mob cooldown: 15 seconds max (same mob can't spam)
+  - [x] Per-mob cooldown: 15 seconds (same mob can't spam)
   - [x] Per-mob cooldown dict (keyed by InstanceID)
+  - [x] NO global cooldown (allows multiple mobs to talk simultaneously)
   - [x] Method: `CanMobSpeak(Character mob)` → bool
   - [x] Method: `RecordMobSpeak(Character mob)` → void
 
@@ -348,7 +348,7 @@
 
 ### Other Considerations
 - **Async design:** LLM calls are async/fire-and-forget to avoid blocking server
-- **Cooldown strategy:** Global + per-mob cooldowns prevent spam without killing immersion
+- **Cooldown strategy:** Per-mob cooldown (15s) only - NO global cooldown. MaxSimultaneousInsults (5 per frame) prevents message spam
 - **Localization critical:** Must use `Localization.instance.Localize()` before sending to LLM
 - **Error resilience:** Mod should gracefully degrade if LM Studio is offline or slow
 

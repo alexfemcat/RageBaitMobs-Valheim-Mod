@@ -13,8 +13,8 @@ namespace RagebateMobs.Configuration
         public ConfigEntry<bool> Enabled { get; private set; }
         public ConfigEntry<OutputMode> OutputMode { get; private set; }
         public ConfigEntry<string> LMStudioApiUrl { get; private set; }
-        public ConfigEntry<float> GlobalCooldownSeconds { get; private set; }
         public ConfigEntry<float> PerMobCooldownSeconds { get; private set; }
+        public ConfigEntry<int> MaxSimultaneousInsults { get; private set; }
         public ConfigEntry<float> MinDamageThreshold { get; private set; }
         public ConfigEntry<bool> DebugLogging { get; private set; }
 
@@ -41,18 +41,18 @@ namespace RagebateMobs.Configuration
                 "URL where LM Studio is running (default: localhost)"
             );
 
-            GlobalCooldownSeconds = config.Bind(
-                "Cooldowns",
-                "GlobalCooldownSeconds",
-                8f,
-                "Minimum seconds between ANY mob speaking (prevents spam)"
-            );
-
             PerMobCooldownSeconds = config.Bind(
                 "Cooldowns",
                 "PerMobCooldownSeconds",
                 15f,
-                "Minimum seconds before the SAME mob speaks again (max 15s)"
+                "Minimum seconds before the SAME mob speaks again"
+            );
+
+            MaxSimultaneousInsults = config.Bind(
+                "Cooldowns",
+                "MaxSimultaneousInsults",
+                5,
+                "Max insults to broadcast simultaneously (prevents message spam on frame)"
             );
 
             MinDamageThreshold = config.Bind(

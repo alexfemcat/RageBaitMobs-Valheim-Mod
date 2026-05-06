@@ -6,16 +6,12 @@ namespace RagebateMobs.Managers
 {
     public class CooldownManager
     {
-        private float _lastGlobalTalkTime;
         private readonly Dictionary<int, float> _perMobLastTalkTime = new Dictionary<int, float>();
-        private readonly float _globalCooldown;
         private readonly float _perMobCooldown;
 
-        public CooldownManager(float globalCooldownSeconds, float perMobCooldownSeconds)
+        public CooldownManager(float perMobCooldownSeconds)
         {
-            _globalCooldown = globalCooldownSeconds;
             _perMobCooldown = perMobCooldownSeconds;
-            _lastGlobalTalkTime = float.MinValue;
         }
 
         public bool CanMobSpeak(Character mob)
@@ -24,13 +20,9 @@ namespace RagebateMobs.Managers
                 return false;
 
             float now = Time.time;
-
-            // Check global cooldown
-            if (now - _lastGlobalTalkTime < _globalCooldown)
-                return false;
+            int mobId = mob.GetInstanceID();
 
             // Check per-mob cooldown
-            int mobId = mob.GetInstanceID();
             if (_perMobLastTalkTime.TryGetValue(mobId, out float lastTime))
             {
                 if (now - lastTime < _perMobCooldown)
@@ -46,8 +38,6 @@ namespace RagebateMobs.Managers
                 return;
 
             float now = Time.time;
-            _lastGlobalTalkTime = now;
-
             int mobId = mob.GetInstanceID();
             _perMobLastTalkTime[mobId] = now;
         }
@@ -55,7 +45,6 @@ namespace RagebateMobs.Managers
         public void Clear()
         {
             _perMobLastTalkTime.Clear();
-            _lastGlobalTalkTime = float.MinValue;
         }
     }
 }

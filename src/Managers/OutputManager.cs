@@ -7,11 +7,23 @@ namespace RagebateMobs.Managers
     {
         private readonly ModConfig _config;
         private readonly ManualLogSource _logger;
+        private int _insultsThisFrame = 0;
+        private int _lastFrameCount = 0;
 
         public OutputManager(ModConfig config, ManualLogSource logger)
         {
             _config = config;
             _logger = logger;
+        }
+
+        private void ResetFrameCounter()
+        {
+            // Reset if we're on a new frame
+            if (_lastFrameCount != UnityEngine.Time.frameCount)
+            {
+                _lastFrameCount = UnityEngine.Time.frameCount;
+                _insultsThisFrame = 0;
+            }
         }
 
         public void BroadcastInsult(Character mob, string insult)
@@ -26,6 +38,16 @@ namespace RagebateMobs.Managers
                 return;
             }
 
+            ResetFrameCounter();
+
+            // Check if we've hit the max insults per frame
+            if (_insultsThisFrame >= _config.MaxSimultaneousInsults.Value)
+            {
+                if (_config.DebugLogging.Value)
+                    _logger.LogInfo($"[Ragebait] Hit max simultaneous insults ({_config.MaxSimultaneousInsults.Value}) this frame");
+                return;
+            }
+
             switch (_config.OutputMode.Value)
             {
                 case OutputMode.Shout:
@@ -35,6 +57,8 @@ namespace RagebateMobs.Managers
                     BroadcastAsChat(mob, insult);
                     break;
             }
+
+            _insultsThisFrame++;
 
             if (_config.DebugLogging.Value)
                 _logger.LogInfo($"[Ragebait] {mob.m_name} taunted: {insult}");
