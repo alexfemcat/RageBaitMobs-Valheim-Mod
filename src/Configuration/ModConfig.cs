@@ -37,8 +37,8 @@ namespace RagebateMobs.Configuration
             LMStudioApiUrl = config.Bind(
                 "API",
                 "LMStudioUrl",
-                "http://localhost:1234",
-                "URL where LM Studio is running (default: localhost)"
+                "http://localhost:1234/v1",
+                "Base URL for LM Studio API (includes /v1 endpoint)"
             );
 
             PerMobCooldownSeconds = config.Bind(

@@ -39,7 +39,7 @@ namespace RagebateMobs.Services
                     "application/json"
                 );
 
-                var response = await HttpClient.PostAsync($"{_apiUrl}/v1/chat/completions", content);
+                var response = await HttpClient.PostAsync($"{_apiUrl}/chat/completions", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

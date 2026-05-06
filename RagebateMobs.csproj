@@ -9,6 +9,11 @@
     <OutputPath>bin/Release/net472/</OutputPath>
   </PropertyGroup>
 
+  <!-- NuGet Dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
   <!-- Reference BepInEx assemblies from local installation -->
   <!-- These paths assume BepInEx is installed in the Valheim server directory -->
   <!-- Update paths as needed for your local Valheim installation -->
@@ -25,6 +30,11 @@
       <HintPath>../../lib/BepInEx/core/0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
+  </ItemGroup>
+
+  <!-- Exclude test files from main build -->
+  <ItemGroup>
+    <Compile Remove="tests/**" />
   </ItemGroup>
 
 </Project>

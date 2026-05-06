@@ -4,7 +4,10 @@
       "Bash(dotnet restore *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git commit -m 'docs: Mark Phases 1-6 complete in devplan *)",
+      "Bash(dotnet build *)",
+      "Bash(git commit -m 'refactor: Update LM Studio URL to use /v1 as base endpoint *)"
     ]
   }
 }
