@@ -50,17 +50,21 @@ namespace RagebateMobs
         private void ApplyPatches()
         {
             _harmony = new Harmony(GUID);
+            ApplyOne(typeof(MonsterAITargetingPatch), "MonsterAI.DoAttack");
+            ApplyOne(typeof(CharacterDamagePatch), "Character.ApplyDamage");
+            ApplyOne(typeof(ZNetAwakePatch), "ZNet.Awake");
+        }
 
+        private void ApplyOne(System.Type patchType, string label)
+        {
             try
             {
-                _harmony.PatchAll(typeof(MonsterAITargetingPatch));
-                _harmony.PatchAll(typeof(CharacterDamagePatch));
-                _harmony.PatchAll(typeof(ZRoutedRpcAwakePatch));
-                Logger.LogInfo("[Viking Ragebait] Patches applied (DoAttack, ApplyDamage, ZRoutedRpc.Awake)");
+                _harmony.PatchAll(patchType);
+                Logger.LogInfo($"[Viking Ragebait] Patched {label}");
             }
             catch (System.Exception ex)
             {
-                Logger.LogError($"[{Name}] Failed to apply patches: {ex}");
+                Logger.LogError($"[Viking Ragebait] Failed to patch {label}: {ex.Message}");
             }
         }
 
