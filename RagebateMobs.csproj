@@ -8,6 +8,8 @@
     <Version>1.0.0</Version>
     <OutputPath>bin/Release/net472/</OutputPath>
     <GeneratePathProperty>true</GeneratePathProperty>
+    <!-- Copy NuGet dependencies (Newtonsoft.Json) into the output folder so BepInEx can load them. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>

@@ -4,15 +4,19 @@ using UnityEngine;
 namespace RagebateMobs.Network
 {
     // Hybrid network protocol:
-    //   Client (modded) --[RagebateMobs_RequestRoast]--> Server
-    //   Server                                          --> calls LLM
-    //   Server         --[ChatMessage (vanilla RPC)]--> All clients (incl. vanilla)
+    //   Modded client --[RagebateMobs_RequestRoast]--> Server (calls LLM)
+    //   Server        --[RagebateMobs_RoastBroadcast]--> Modded clients (Chat.SetNpcText bubble)
     //
-    // Vanilla clients can still join (soft dep): they don't send the request RPC,
-    // but they DO receive the broadcast because it uses Valheim's built-in chat RPC.
+    // Vanilla clients can still join the server (soft dep). They don't send request RPCs and
+    // they don't render the bubble (no handler), but they can play normally.
     public static class RoastRpc
     {
         public const string RequestRpc = "RagebateMobs_RequestRoast";
+        public const string BroadcastRpc = "RagebateMobs_RoastBroadcast";
+
+        private const float BubbleCullDistance = 30f;
+        private const float BubbleTtlSeconds = 5f;
+
         private static bool _registered = false;
 
         public static void Register()
@@ -21,8 +25,9 @@ namespace RagebateMobs.Network
             if (ZRoutedRpc.instance == null) return;
 
             ZRoutedRpc.instance.Register<ZPackage>(RequestRpc, OnRequest);
+            ZRoutedRpc.instance.Register<ZPackage>(BroadcastRpc, OnBroadcast);
             _registered = true;
-            RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] Registered RPC: {RequestRpc}");
+            RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] Registered RPCs: {RequestRpc}, {BroadcastRpc}");
         }
 
         // Called from CLIENT-side patches.
@@ -76,44 +81,47 @@ namespace RagebateMobs.Network
         }
 
         // Server-side broadcast on the main thread.
-        // Uses Valheim's vanilla ChatMessage routed RPC so unmodded clients also see the speech bubble.
+        // Custom routed RPC; modded clients render via Chat.SetNpcText. Vanilla clients ignore it.
         private static void Broadcast(ZDOID mobId, string mobName, string insult)
         {
-            Vector3 position;
-            if (ZNetScene.instance != null)
-            {
-                var go = ZNetScene.instance.FindInstance(mobId);
-                if (go != null)
-                {
-                    position = go.transform.position;
-                }
-                else
-                {
-                    var zdo = ZDOMan.instance?.GetZDO(mobId);
-                    if (zdo == null)
-                    {
-                        RagebateMobsPlugin.Logger.LogWarning($"[Ragebait] Mob {mobId} not found, dropping roast");
-                        return;
-                    }
-                    position = zdo.GetPosition();
-                }
-            }
-            else
-            {
-                return;
-            }
+            if (ZRoutedRpc.instance == null) return;
 
-            var userInfo = new UserInfo { Name = mobName ?? "" };
+            var pkg = new ZPackage();
+            pkg.Write(mobId);
+            pkg.Write(mobName ?? "");
+            pkg.Write(insult ?? "");
 
-            ZRoutedRpc.instance.InvokeRoutedRPC(
-                ZRoutedRpc.Everybody,
-                "ChatMessage",
-                position,
-                (int)Talker.Type.Shout,
-                userInfo,
-                insult);
+            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, BroadcastRpc, pkg);
 
             RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName}: {insult}");
+        }
+
+        // Client-side handler. Renders an NPC speech bubble above the mob's head.
+        // Server peers also receive their own broadcast; the FindInstance call returns null
+        // on a headless dedicated server (no rendering), so this is a safe no-op there.
+        private static void OnBroadcast(long sender, ZPackage pkg)
+        {
+            if (pkg == null) return;
+
+            var mobId = pkg.ReadZDOID();
+            var mobName = pkg.ReadString();
+            var insult = pkg.ReadString();
+
+            if (Chat.instance == null) return;
+            if (ZNetScene.instance == null) return;
+
+            var go = ZNetScene.instance.FindInstance(mobId);
+            if (go == null) return;
+
+            // Bubble above the mob's head, cull-distance limited so it doesn't spam the whole server.
+            Chat.instance.SetNpcText(
+                go,
+                Vector3.up * 1.5f,
+                BubbleCullDistance,
+                BubbleTtlSeconds,
+                mobName ?? "",
+                insult ?? "",
+                false);
         }
     }
 }

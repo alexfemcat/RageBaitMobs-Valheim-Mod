@@ -35,7 +35,7 @@ namespace RagebateMobs.Configuration
             LMStudioApiUrl = _config.Bind("API", "LMStudioApiUrl", "http://localhost:1234/v1",
                 "Base URL for LM Studio API (must include /v1)");
 
-            PerMobCooldownSeconds = _config.Bind("Cooldowns", "PerMobCooldownSeconds", 5,
+            PerMobCooldownSeconds = _config.Bind("Cooldowns", "PerMobCooldownSeconds", 10,
                 "Minimum seconds before the SAME mob speaks again");
             MaxSimultaneousInsults = _config.Bind("Cooldowns", "MaxSimultaneousInsults", 5,
                 "Max insults broadcast on the same frame (prevents spam)");
