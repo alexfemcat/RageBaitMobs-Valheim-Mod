@@ -6,13 +6,18 @@ namespace RagebateMobs.Patches
     [HarmonyPatch(typeof(Character), nameof(Character.ApplyDamage))]
     public static class CharacterDamagePatch
     {
+        private static int _callCount = 0;
+
         [HarmonyPostfix]
         public static void Postfix(Character __instance, HitData hit)
         {
+            _callCount++;
+            if (_callCount <= 3)
+                RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] ApplyDamage postfix fired (call #{_callCount})");
+
             if (!ZNet.instance || !ZNet.instance.IsServer() || !RagebateMobsPlugin.Config.Enabled.Value)
                 return;
 
-            // Trigger when a PLAYER takes damage from a mob
             if (!__instance.IsPlayer())
                 return;
 
@@ -38,16 +43,21 @@ namespace RagebateMobs.Patches
             string prompt = PromptBuilder.BuildInsultPrompt(mobName, "took_damage", playerName);
 
             RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mob);
-            RagebateMobsPlugin.Logger.LogDebug($"[Ragebait] {mobName} took damage from {playerName}, generating roast");
+            RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} hit {playerName} for {damageAmount:F1} dmg, generating roast");
 
-            // Log that mob has taken damage from player
-RagebateMobsPlugin.Logger.LogDebug($"[Ragebait] {mobName} took damage from {playerName}");
-RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
-{
-    var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
-    if (!string.IsNullOrWhiteSpace(insult))
-        RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
-});
+            RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
+            {
+                var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
+                if (!string.IsNullOrWhiteSpace(insult))
+                {
+                    RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName}: {insult}");
+                    RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
+                }
+                else
+                {
+                    RagebateMobsPlugin.Logger.LogWarning($"[Ragebait] Empty insult from LLM for {mobName}");
+                }
+            });
         }
     }
 }

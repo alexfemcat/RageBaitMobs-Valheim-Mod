@@ -16,9 +16,8 @@ namespace RagebateMobs.Patches
         {
             _callCount++;
 
-            // Log every 100 calls so we know the patch is firing at all
-            if (_callCount % 100 == 0)
-                RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] DoAttack fired {_callCount} times");
+            if (_callCount <= 3 || _callCount % 100 == 0)
+                RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] DoAttack postfix fired (call #{_callCount})");
 
             if (ZNet.instance == null) { RagebateMobsPlugin.Logger.LogWarning("[Ragebait] ZNet.instance is null"); return; }
             if (!ZNet.instance.IsServer()) { RagebateMobsPlugin.Logger.LogWarning("[Ragebait] Not server"); return; }
