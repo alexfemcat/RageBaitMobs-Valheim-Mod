@@ -21,6 +21,7 @@
     <Reference Include="UnityEngine.CoreModule" HintPath="lib/BepInEx/core/UnityEngine.CoreModule.dll" Private="false" />
     <Reference Include="UnityEngine" HintPath="lib/BepInEx/core/UnityEngine.dll" Private="false" />
     <Reference Include="assembly_valheim" HintPath="lib/BepInEx/core/assembly_valheim.dll" Private="false" />
+    <Reference Include="assembly_utils" HintPath="lib/BepInEx/core/assembly_utils.dll" Private="false" />
     <Reference Include="Splatform" HintPath="lib/BepInEx/core/Splatform.dll" Private="false" />
     <Reference Include="assembly_guiutils" HintPath="lib/BepInEx/core/assembly_guiutils.dll" Private="false" />
     <Reference Include="System.Net.Http" />

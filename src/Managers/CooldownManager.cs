@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,45 +5,29 @@ namespace RagebateMobs.Managers
 {
     public class CooldownManager
     {
-        private readonly Dictionary<int, float> _perMobLastTalkTime = new Dictionary<int, float>();
-        private readonly float _perMobCooldown;
+        private readonly Dictionary<ZDOID, float> _lastTalk = new Dictionary<ZDOID, float>();
+        private readonly float _cooldown;
 
         public CooldownManager(float perMobCooldownSeconds)
         {
-            _perMobCooldown = perMobCooldownSeconds;
+            _cooldown = perMobCooldownSeconds;
         }
 
-        public bool CanMobSpeak(Character mob)
+        public bool CanMobSpeak(ZDOID mobId)
         {
-            if (mob == null)
-                return false;
-
+            if (mobId == ZDOID.None) return false;
             float now = Time.time;
-            int mobId = mob.GetInstanceID();
-
-            // Check per-mob cooldown
-            if (_perMobLastTalkTime.TryGetValue(mobId, out float lastTime))
-            {
-                if (now - lastTime < _perMobCooldown)
-                    return false;
-            }
-
+            if (_lastTalk.TryGetValue(mobId, out var last) && now - last < _cooldown)
+                return false;
             return true;
         }
 
-        public void RecordMobSpeak(Character mob)
+        public void RecordMobSpeak(ZDOID mobId)
         {
-            if (mob == null)
-                return;
-
-            float now = Time.time;
-            int mobId = mob.GetInstanceID();
-            _perMobLastTalkTime[mobId] = now;
+            if (mobId == ZDOID.None) return;
+            _lastTalk[mobId] = Time.time;
         }
 
-        public void Clear()
-        {
-            _perMobLastTalkTime.Clear();
-        }
+        public void Clear() => _lastTalk.Clear();
     }
 }

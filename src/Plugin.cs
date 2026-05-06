@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using RagebateMobs.Configuration;
 using RagebateMobs.Managers;
+using RagebateMobs.Network;
 using RagebateMobs.Patches;
 using RagebateMobs.Services;
 
@@ -19,7 +20,6 @@ namespace RagebateMobs
         public static ModConfig Config { get; private set; }
         public static LLMService LLMService { get; private set; }
         public static CooldownManager CooldownManager { get; private set; }
-        public static OutputManager OutputManager { get; private set; }
         public static TaskManager TaskManager { get; private set; }
 
         private static Harmony _harmony;
@@ -34,12 +34,12 @@ namespace RagebateMobs
                 Config = new ModConfig(base.Config);
                 LLMService = new LLMService(Config.LMStudioApiUrl.Value, Config.LLMModel.Value, Logger);
                 CooldownManager = new CooldownManager(Config.PerMobCooldownSeconds.Value);
-                OutputManager = new OutputManager(Config, Logger);
                 TaskManager = new TaskManager(Logger);
 
+                MainThreadDispatcher.Initialize();
                 ApplyPatches();
 
-                Logger.LogInfo($"[{Name}] Loaded successfully! API: {Config.LMStudioApiUrl.Value}");
+                Logger.LogInfo($"[{Name}] Loaded. API: {Config.LMStudioApiUrl.Value}");
             }
             catch (System.Exception ex)
             {
@@ -54,10 +54,9 @@ namespace RagebateMobs
             try
             {
                 _harmony.PatchAll(typeof(MonsterAITargetingPatch));
-                Logger.LogInfo("[Viking Ragebait] MonsterAI.UpdateTargeting patched");
-
                 _harmony.PatchAll(typeof(CharacterDamagePatch));
-                Logger.LogInfo("[Viking Ragebait] Character.ApplyDamage patched");
+                _harmony.PatchAll(typeof(ZRoutedRpcAwakePatch));
+                Logger.LogInfo("[Viking Ragebait] Patches applied (DoAttack, ApplyDamage, ZRoutedRpc.Awake)");
             }
             catch (System.Exception ex)
             {
