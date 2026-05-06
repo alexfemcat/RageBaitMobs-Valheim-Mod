@@ -66,25 +66,14 @@ namespace RagebateMobs.Managers
 
         private void BroadcastAsShout(Character mob, string insult)
         {
-            // Use vanilla Character.Say() - displays yellow speech bubble
-            // This is a vanilla Valheim feature, no custom RPC needed
-            mob.Say(insult);
+            // Broadcast via ZRoutedRpc so all clients see the speech bubble
+            mob.GetComponent<ZNetView>()?.InvokeRPC(ZNetView.Everybody, "OnNPCText", insult, 2.0f, 5.0f, Talker.Type.Shout, false);
         }
 
         private void BroadcastAsChat(Character mob, string insult)
         {
-            // Use vanilla Chat system to broadcast to all players
-            string mobDisplayName = Localization.instance.Localize(mob.m_name);
-            string chatMessage = $"{mobDisplayName}: {insult}";
-
-            if (Chat.instance != null)
-            {
-                Chat.instance.SendMessage(chatMessage);
-            }
-            else
-            {
-                _logger.LogWarning("[Ragebait] Chat instance not found!");
-            }
+            string mobDisplayName = global::Localization.instance.Localize(mob.m_name);
+            Chat.instance?.AddString(mobDisplayName, insult, Talker.Type.Normal);
         }
     }
 }

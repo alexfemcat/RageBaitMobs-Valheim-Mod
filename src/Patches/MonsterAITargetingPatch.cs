@@ -1,62 +1,54 @@
 using HarmonyLib;
 using RagebateMobs.Services;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RagebateMobs.Patches
 {
-    [HarmonyPatch(typeof(MonsterAI), nameof(MonsterAI.UpdateTargeting))]
+    // Fires on every AI update tick - catches aggro + proximity
+    [HarmonyPatch(typeof(MonsterAI), "UpdateAI")]
     public static class MonsterAITargetingPatch
     {
-        private static HashSet<int> _mobsJustAggro = new HashSet<int>();
+        private static HashSet<int> _cooldownedMobs = new HashSet<int>();
+        private static Dictionary<int, float> _mobNextTalkTime = new Dictionary<int, float>();
 
         [HarmonyPostfix]
-        public static void Postfix(MonsterAI __instance)
+        public static void Postfix(MonsterAI __instance, float dt)
         {
             if (!ZNet.instance || !ZNet.instance.IsServer() || !RagebateMobsPlugin.Config.Enabled.Value)
                 return;
 
-            var mob = __instance.m_character;
-            if (mob == null || mob.IsPlayer())
+            var mob = __instance.GetComponent<Character>();
+            if (mob == null || mob.IsPlayer() || mob.IsDead())
                 return;
 
-            var target = __instance.m_targetCreature;
+            var target = __instance.GetTargetCreature();
             if (target == null || !target.IsPlayer())
-            {
-                _mobsJustAggro.Remove(mob.GetInstanceID());
                 return;
-            }
 
             int mobId = mob.GetInstanceID();
+            float now = Time.time;
 
-            // Only trigger on initial aggro (target just acquired)
-            if (_mobsJustAggro.Contains(mobId))
+            if (_mobNextTalkTime.TryGetValue(mobId, out float nextTime) && now < nextTime)
                 return;
 
-            _mobsJustAggro.Add(mobId);
+            _mobNextTalkTime[mobId] = now + RagebateMobsPlugin.Config.PerMobCooldownSeconds.Value;
 
-            // Check cooldowns
-            if (!RagebateMobsPlugin.CooldownManager.CanMobSpeak(mob))
-                return;
+            string mobName = global::Localization.instance.Localize(mob.m_name);
+            if (string.IsNullOrWhiteSpace(mobName))
+                mobName = mob.m_name;
 
-            // Get localized mob name
-            string localizedMobName = Localization.instance.Localize(mob.m_name);
-            string playerName = target.GetPlayerName();
+            string playerName = (target as Player)?.GetPlayerName() ?? "player";
+            string prompt = PromptBuilder.BuildInsultPrompt(mobName, "spotted_player", playerName);
 
-            if (string.IsNullOrWhiteSpace(localizedMobName))
-                localizedMobName = mob.m_name;
+            if (RagebateMobsPlugin.Config.DebugLogging.Value)
+                RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} taunting {playerName}...");
 
-            // Build prompt and request insult
-            string prompt = PromptBuilder.BuildInsultPrompt(localizedMobName, "spotted_player", playerName);
-
-            // Fire async request (non-blocking)
             RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
             {
                 var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
                 if (!string.IsNullOrWhiteSpace(insult))
-                {
-                    RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mob);
                     RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
-                }
             });
         }
     }

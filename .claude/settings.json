@@ -10,7 +10,17 @@
       "Bash(git commit -m 'refactor: Update LM Studio URL to use /v1 as base endpoint *)",
       "Bash(git commit -m 'test: Add LM Studio API endpoint validation scripts *)",
       "Bash(python3 test_lm_studio.py)",
-      "Bash(git commit -m 'feat: Switch to Mistral-3 3B for authentic trash talk with sexual insults *)"
+      "Bash(git commit -m 'feat: Switch to Mistral-3 3B for authentic trash talk with sexual insults *)",
+      "Bash(mkdir -p lib/BepInEx/core && cp TEST_SERVER/BepInEx/core/*.dll lib/BepInEx/core/ && ls lib/BepInEx/core/ | wc -l)",
+      "Bash(cp TEST_SERVER/valheim_server_Data/Managed/*.dll lib/BepInEx/core/ 2>&1 | grep -i copied | head -5 || echo \"DLLs copied\")",
+      "Bash(grep -E \"^m_target|^GetPlayer|^Say$|^Localize\")",
+      "Bash(grep -E \"^Say$|^GetName$|^m_name$\")",
+      "Bash(grep -E \"^Localization$|^Talker$\")",
+      "Bash(grep -E \"^UpdateAI$\")"
+    ],
+    "additionalDirectories": [
+      "/home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/TEST_SERVER/BepInEx/core",
+      "/home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/TEST_SERVER/valheim_server_Data/Managed"
     ]
   }
 }

@@ -9,44 +9,34 @@ namespace RagebateMobs.Patches
         [HarmonyPostfix]
         public static void Postfix(Character __instance, HitData hit)
         {
-            if (!ShouldExecute())
+            if (!ZNet.instance || !ZNet.instance.IsServer() || !RagebateMobsPlugin.Config.Enabled.Value)
                 return;
 
-            // Only trigger on mobs, not players
             var mob = __instance;
             if (mob == null || mob.IsPlayer())
                 return;
 
-            // Only trigger on mobs, not objects
-            var monsterAI = mob.GetComponent<MonsterAI>();
-            if (monsterAI == null)
+            if (mob.GetComponent<MonsterAI>() == null)
                 return;
 
-            // Check minimum damage threshold
             float damageAmount = hit?.GetTotalDamage() ?? 0f;
             if (damageAmount < RagebateMobsPlugin.Config.MinDamageThreshold.Value)
                 return;
 
-            // Get attacker (should be a player)
             var attacker = hit?.GetAttacker();
             if (attacker == null || !attacker.IsPlayer())
                 return;
 
-            // Check cooldowns
             if (!RagebateMobsPlugin.CooldownManager.CanMobSpeak(mob))
                 return;
 
-            // Get localized mob name
-            string localizedMobName = Localization.instance.Localize(mob.m_name);
-            string playerName = attacker.GetPlayerName();
+            string mobName = global::Localization.instance.Localize(mob.m_name);
+            if (string.IsNullOrWhiteSpace(mobName))
+                mobName = mob.m_name;
 
-            if (string.IsNullOrWhiteSpace(localizedMobName))
-                localizedMobName = mob.m_name;
+            string playerName = (attacker as Player)?.GetPlayerName() ?? attacker.GetHoverName();
+            string prompt = PromptBuilder.BuildInsultPrompt(mobName, "took_damage", playerName);
 
-            // Build prompt and request insult
-            string prompt = PromptBuilder.BuildInsultPrompt(localizedMobName, "took_damage", playerName);
-
-            // Fire async request (non-blocking)
             RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
             {
                 var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
@@ -56,11 +46,6 @@ namespace RagebateMobs.Patches
                     RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
                 }
             });
-        }
-
-        private static bool ShouldExecute()
-        {
-            return ZNet.instance && ZNet.instance.IsServer() && RagebateMobsPlugin.Config.Enabled.Value;
         }
     }
 }
