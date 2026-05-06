@@ -6,139 +6,102 @@
 
 ---
 
-## Phase 1: Project Setup & Infrastructure
+## Phase 1: Project Setup & Infrastructure ✅ COMPLETE
 
 ### Folder Structure & Dependencies
-- [ ] Create project root directory structure:
-  - [ ] `/RagebateMobs/` (root)
-  - [ ] `/RagebateMobs/src/` (C# source files)
-  - [ ] `/RagebateMobs/DOCS/` (documentation)
-  - [ ] `/RagebateMobs/bin/` (build output)
-  - [ ] `/RagebateMobs/obj/` (build artifacts)
-  - [ ] `/RagebateMobs/.gitignore` (exclude bin, obj, .vs)
+- [x] Create project root directory structure:
+  - [x] `/RagebateMobs/` (root)
+  - [x] `/RagebateMobs/src/` (C# source files)
+  - [x] `/RagebateMobs/DOCS/` (documentation)
+  - [x] `/RagebateMobs/bin/` (build output)
+  - [x] `/RagebateMobs/obj/` (build artifacts)
+  - [x] `/RagebateMobs/.gitignore` (exclude bin, obj, .vs)
 
 ### Core Project Files
-- [ ] **RagebateMobs.csproj** - Configure project file with:
-  - [ ] Target Framework: `net472` (Mono-compatible) for Linux/PufferPanel
-  - [ ] Add BepInEx 5 NuGet reference
-  - [ ] Add Harmony NuGet reference
-  - [ ] Add Valheim assembly references (extract from server install or use NuGet if available)
-  - [ ] Configure output directory: `bin/Release/net472/`
-  - [ ] **Linux note:** Use forward slashes in all paths, avoid hardcoded Windows paths
-  - [ ] PostBuildEvent: Copy DLL to local BepInEx/plugins folder (optional, for testing)
-  - [ ] Example minimal .csproj structure:
-    ```xml
-    <Project Sdk="Microsoft.NET.Sdk">
-      <PropertyGroup>
-        <TargetFramework>net472</TargetFramework>
-        <OutputType>Library</OutputType>
-        <LangVersion>latest</LangVersion>
-      </PropertyGroup>
-      <ItemGroup>
-        <PackageReference Include="BepInEx" Version="5.4.x" />
-        <PackageReference Include="Harmony" Version="2.x" />
-      </ItemGroup>
-    </Project>
-    ```
+- [x] **RagebateMobs.csproj** - Configure project file with:
+  - [x] Target Framework: `net472` (Mono-compatible) for Linux/PufferPanel
+  - [x] Add local BepInEx assembly references
+  - [x] Configure output directory: `bin/Release/net472/`
+  - [x] **Linux note:** Use forward slashes in all paths
+  - [x] Minimal .csproj structure configured
 
 ---
 
-## Phase 2: Core LLM Integration
+## Phase 2: Core LLM Integration ✅ COMPLETE
 
 ### LLMService.cs - API Communication Layer
-- [ ] Create `src/Services/LLMService.cs` with:
-  - [ ] HttpClient static instance (avoid socket exhaustion)
-  - [ ] Async method: `GenerateInsultAsync(string mobName, string playerName, string context)`
-  - [ ] Build JSON request payload for LM Studio API:
-    ```
-    {
-      "model": "local-model",
-      "messages": [{"role": "user", "content": "<dynamic prompt>"}],
-      "temperature": 0.8,
-      "max_tokens": 50
-    }
-    ```
-  - [ ] Parse JSON response and extract generated text
-  - [ ] Error handling (timeout, connection failure, malformed response)
-  - [ ] Logging for debugging API calls (optional)
+- [x] Create `src/Services/LLMService.cs` with:
+  - [x] HttpClient static instance (10s timeout)
+  - [x] Async method: `GenerateInsultAsync(string prompt)`
+  - [x] Proper JSON serialization for LM Studio API
+  - [x] Model: "gemma-3", temperature: 0.95, max_tokens: 50
+  - [x] JSON response parsing with error handling
+  - [x] Graceful timeout/connection failure handling
+  - [x] Logging for debugging
 
 ### LLM Prompt Builder
-- [ ] Create `src/Services/PromptBuilder.cs` with:
-  - [ ] Method: `BuildInsultPrompt(string localizedMobName, string triggerType)` 
-    - `triggerType` = "spotted_player" or "took_damage"
-  - [ ] Dynamic persona prompt construction:
-    - Base: "You are a [LocalizedMobName] in the game Valheim. You absolutely loathe humans."
-    - Context: "You just [spotted a player / got hit by one]."
-    - Instruction: "Write a short, one-sentence insult in the style of a toxic 'Call of Duty' lobby."
-    - Slang guide: "Use slang like 'skill issue', 'L + Ratio', 'get gud', 'touch grass', or 'dogwater'."
-    - Constraints: "Keep it under 15 words. Be petty and aggressive."
+- [x] Create `src/Services/PromptBuilder.cs` with:
+  - [x] Method: `BuildInsultPrompt(string localizedMobName, string triggerType, string playerName)` 
+  - [x] Context-aware prompts: "spotted_player" vs "took_damage"
+  - [x] **AUTHENTIC trash-talk** - no sanitized cringe
+  - [x] Real gaming insults: retard, dogwater, skill issue, L+ratio, washed, cope, seethe, etc.
+  - [x] Encourages genuine meanness and pettiness
+  - [x] Constraint: <20 words, 1-2 sentences max
 
 ---
 
-## Phase 3: Configuration & Cooldown Management
+## Phase 3: Configuration & Cooldown Management ✅ COMPLETE
 
 ### Plugin Configuration System
-- [ ] Create `src/Configuration/ModConfig.cs` with:
-  - [ ] Config property: `OutputMode` (enum: Shout, Chat)
-  - [ ] Config property: `GlobalCooldownSeconds` (default: 5)
-  - [ ] Config property: `PerMobCooldownSeconds` (default: 60)
-  - [ ] Config property: `LMStudioApiUrl` (default: "http://localhost:1234")
-  - [ ] Config property: `Enabled` (toggle for entire mod)
-  - [ ] Config property: `MinDamageThreshold` (only trigger on significant damage)
-  - [ ] Load/save to BepInEx ConfigFile
+- [x] Create `src/Configuration/ModConfig.cs` with:
+  - [x] Config property: `OutputMode` (enum: Shout, Chat)
+  - [x] Config property: `GlobalCooldownSeconds` (default: 5)
+  - [x] Config property: `PerMobCooldownSeconds` (default: 60)
+  - [x] Config property: `LMStudioApiUrl` (default: "http://localhost:1234")
+  - [x] Config property: `Enabled` (toggle for entire mod)
+  - [x] Config property: `MinDamageThreshold` (only trigger on significant damage)
+  - [x] Auto-save to BepInEx ConfigFile
 
 ### Cooldown Manager
-- [ ] Create `src/Managers/CooldownManager.cs` with:
-  - [ ] Property: `LastGlobalTalkTime` (DateTime)
-  - [ ] Dictionary: `perMobLastTalkTime` (Keyed by Character/NPC instance or InstanceID)
-  - [ ] Method: `CanMobSpeak(Character mob)` → bool
-    - Check if global cooldown elapsed
-    - Check if specific mob cooldown elapsed
-    - Return true only if both are ready
-  - [ ] Method: `RecordMobSpeak(Character mob)` → void
-    - Update LastGlobalTalkTime
-    - Update perMobLastTalkTime[mob]
+- [x] Create `src/Managers/CooldownManager.cs` with:
+  - [x] Global cooldown: 8 seconds (any mob speaking resets timer)
+  - [x] Per-mob cooldown: 15 seconds max (same mob can't spam)
+  - [x] Per-mob cooldown dict (keyed by InstanceID)
+  - [x] Method: `CanMobSpeak(Character mob)` → bool
+  - [x] Method: `RecordMobSpeak(Character mob)` → void
 
 ---
 
-## Phase 4: Core Plugin & Harmony Patches
+## Phase 4: Core Plugin & Harmony Patches ✅ COMPLETE
 
 ### Plugin.cs - Main Entry Point
-- [ ] Create `src/Plugin.cs` with:
-  - [ ] Class: `RagebateMobsPlugin : BaseUnityPlugin`
-  - [ ] BepInEx plugin attributes:
-    - [ ] GUID: "com.valheim.ragebatemobs"
-    - [ ] Name: "Viking Ragebait"
-    - [ ] Version: "1.0.0"
-  - [ ] Initialize ModConfig on Awake()
-  - [ ] Initialize CooldownManager singleton
-  - [ ] Apply Harmony patches on Awake()
-  - [ ] Add logging utility methods
+- [x] Create `src/Plugin.cs` with:
+  - [x] Class: `RagebateMobsPlugin : BaseUnityPlugin`
+  - [x] BepInEx plugin attributes (GUID, Name, Version)
+  - [x] Static properties for all services
+  - [x] Awake(): Initialize ModConfig, LLMService, CooldownManager, OutputManager, TaskManager
+  - [x] ApplyPatches(): Apply both Harmony patches
+  - [x] OnDestroy(): Cleanup
 
 ### Harmony Patch: MonsterAI.UpdateTargeting
-- [ ] Create `src/Patches/MonsterAITargetingPatch.cs` with:
-  - [ ] Postfix patch on `MonsterAI.UpdateTargeting()`
-  - [ ] Check if mob just acquired a player target
-  - [ ] Check cooldowns via CooldownManager
-  - [ ] If cooldowns pass:
-    - [ ] Localize mob name: `Localization.instance.Localize(character.m_name)`
-    - [ ] Extract player name from target
-    - [ ] Call `LLMService.GenerateInsultAsync()` (async/fire-and-forget)
-    - [ ] On response, call broadcast method (next section)
-    - [ ] Record speak time in CooldownManager
+- [x] Create `src/Patches/MonsterAITargetingPatch.cs` with:
+  - [x] Postfix patch on `MonsterAI.UpdateTargeting()`
+  - [x] Detects initial mob aggro (target acquisition)
+  - [x] HashSet tracks mobs already aggro'd (one trigger per aggro)
+  - [x] Cooldown checks before requesting insult
+  - [x] Localizes mob name via `Localization.instance.Localize()`
+  - [x] Async call to `LLMService.GenerateInsultAsync()` (fire-and-forget)
+  - [x] Broadcasts via `OutputManager.BroadcastInsult()`
 
 ### Harmony Patch: Character.ApplyDamage
-- [ ] Create `src/Patches/CharacterDamagePatch.cs` with:
-  - [ ] Postfix patch on `Character.ApplyDamage()`
-  - [ ] Check if damaged character is a mob (not player)
-  - [ ] Check if damage exceeds MinDamageThreshold config
-  - [ ] Check cooldowns via CooldownManager
-  - [ ] If cooldowns pass:
-    - [ ] Localize mob name
-    - [ ] Extract attacker (player) name
-    - [ ] Call `LLMService.GenerateInsultAsync()` with "took_damage" context
-    - [ ] On response, call broadcast method
-    - [ ] Record speak time in CooldownManager
+- [x] Create `src/Patches/CharacterDamagePatch.cs` with:
+  - [x] Postfix patch on `Character.ApplyDamage()`
+  - [x] Filters: only mobs (not players), must be attacked by player
+  - [x] Respects MinDamageThreshold config
+  - [x] Cooldown checks before requesting insult
+  - [x] Passes "took_damage" context to LLM
+  - [x] Async call with fire-and-forget pattern
+  - [x] Broadcasts response via OutputManager
 
 ---
 
@@ -304,9 +267,9 @@
 | LM Studio | Latest | Local LLM inference | Install on Linux Mint host |
 
 **Recommended LLM Models:**
-- TinyLlama-1.1B (fastest, ~1-2 sec)
-- Phi-3-mini (balanced, ~2-3 sec)
-- Neural-chat-7B (best quality, ~5-10 sec)
+- **Gemma-3 1B (DEFAULT - recommended for v1.0)** (~1-2 sec, excellent instruction-following, perfect for <15 word constraints)
+- Ministral-3 3B (slightly better quality, ~2-3 sec, if Gemma feels repetitive)
+- Nemotron-3 Nano 4B (higher quality, ~3-4 sec, if you want more creativity)
 
 ---
 
@@ -347,11 +310,15 @@
 
 ### LM Studio on Linux Mint (Host Machine)
 - [ ] Install LM Studio for Linux from [lmstudio.ai](https://lmstudio.ai)
+- [ ] Download **Gemma-3 1B** model in LM Studio (recommended for v1.0)
+  - [ ] Search: "Gemma-3 1B" in LM Studio model browser
+  - [ ] Download and load into context
 - [ ] Run LM Studio server: `lms server start` (default: `http://localhost:1234`)
+- [ ] Verify Gemma-3 1B is loaded: `curl -X GET http://localhost:1234/v1/models`
 - [ ] Keep API URL in mod config pointing to host machine IP/localhost
 - [ ] Verify connectivity from Valheim server to LM Studio:
   - [ ] From server: `curl -X GET http://[host-ip]:1234/v1/models`
-  - [ ] Should return available models
+  - [ ] Should return "gemma-3" in model list
 
 ### File Paths (Linux vs Windows)
 - [ ] Use forward slashes `/` in all file paths (not backslashes)
@@ -388,15 +355,16 @@
 ---
 
 ## Completed Tasks
-✅ = Done | ⏳ = In Progress | ❌ = Blocked
+✅ = Done | ⏳ = In Progress | ❌ = Not Started
 
 | Task | Status |
 |---|---|
-| Project setup | ❌ |
-| LLMService | ❌ |
-| Plugin.cs | ❌ |
-| Patches | ❌ |
-| Broadcasting | ❌ |
-| Testing | ❌ |
-| Documentation | ❌ |
-| Release | ❌ |
+| Phase 1: Project Setup | ✅ |
+| Phase 2: LLM Integration | ✅ |
+| Phase 3: Config & Cooldowns | ✅ |
+| Phase 4: Patches & Plugin | ✅ |
+| Phase 5: Broadcasting | ✅ |
+| Phase 6: Error Handling | ⏳ (implicit in Phase 4) |
+| Phase 7: Testing | ❌ |
+| Phase 8: Polish | ❌ |
+| Phase 9: Deployment | ❌ |

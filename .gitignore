@@ -1,2 +1,30 @@
 TEST_SERVER/
 WORLD_BACKUPS/
+
+# Build output
+bin/
+obj/
+*.dll
+*.pdb
+
+# IDE
+.vs/
+.vscode/
+*.csproj.user
+*.sln.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# BepInEx
+BepInEx/
+doorstop_config.ini
+
+# Local development
+.env
+local.json
+
+# Valheim assemblies
+assembly*.dll
+UnityEngine*.dll
