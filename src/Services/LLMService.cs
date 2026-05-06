@@ -40,7 +40,7 @@ namespace RagebateMobs.Services
                         new { role = "user", content = prompt }
                     },
                     temperature = 0.95,
-                    max_tokens = 80,
+                    max_tokens = 40,
                     top_p = 0.95,
                     stop = new[] { "\n" }
                 };
