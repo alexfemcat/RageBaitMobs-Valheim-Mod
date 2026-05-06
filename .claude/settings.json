@@ -16,7 +16,10 @@
       "Bash(grep -E \"^m_target|^GetPlayer|^Say$|^Localize\")",
       "Bash(grep -E \"^Say$|^GetName$|^m_name$\")",
       "Bash(grep -E \"^Localization$|^Talker$\")",
-      "Bash(grep -E \"^UpdateAI$\")"
+      "Bash(grep -E \"^UpdateAI$\")",
+      "Bash(chmod +x /home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/test_pipeline.sh)",
+      "Bash(./test_pipeline.sh)",
+      "Bash(python3 test_roasts.py)"
     ],
     "additionalDirectories": [
       "/home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/TEST_SERVER/BepInEx/core",

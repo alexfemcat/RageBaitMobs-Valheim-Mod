@@ -12,19 +12,19 @@ namespace RagebateMobs.Patches
             if (!ZNet.instance || !ZNet.instance.IsServer() || !RagebateMobsPlugin.Config.Enabled.Value)
                 return;
 
-            var mob = __instance;
-            if (mob == null || mob.IsPlayer())
-                return;
-
-            if (mob.GetComponent<MonsterAI>() == null)
+            // Trigger when a PLAYER takes damage from a mob
+            if (!__instance.IsPlayer())
                 return;
 
             float damageAmount = hit?.GetTotalDamage() ?? 0f;
             if (damageAmount < RagebateMobsPlugin.Config.MinDamageThreshold.Value)
                 return;
 
-            var attacker = hit?.GetAttacker();
-            if (attacker == null || !attacker.IsPlayer())
+            var mob = hit?.GetAttacker();
+            if (mob == null || mob.IsPlayer())
+                return;
+
+            if (mob.GetComponent<MonsterAI>() == null)
                 return;
 
             if (!RagebateMobsPlugin.CooldownManager.CanMobSpeak(mob))
@@ -34,17 +34,16 @@ namespace RagebateMobs.Patches
             if (string.IsNullOrWhiteSpace(mobName))
                 mobName = mob.m_name;
 
-            string playerName = (attacker as Player)?.GetPlayerName() ?? attacker.GetHoverName();
+            string playerName = (__instance as Player)?.GetPlayerName() ?? __instance.GetHoverName();
             string prompt = PromptBuilder.BuildInsultPrompt(mobName, "took_damage", playerName);
+
+            RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mob);
 
             RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
             {
                 var insult = await RagebateMobsPlugin.LLMService.GenerateInsultAsync(prompt);
                 if (!string.IsNullOrWhiteSpace(insult))
-                {
-                    RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mob);
                     RagebateMobsPlugin.OutputManager.BroadcastInsult(mob, insult);
-                }
             });
         }
     }
