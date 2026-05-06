@@ -32,7 +32,7 @@ namespace RagebateMobs
             try
             {
                 Config = new ModConfig(base.Config);
-                LLMService = new LLMService(Config.LMStudioApiUrl.Value, Logger);
+                LLMService = new LLMService(Config.LMStudioApiUrl.Value, Config.LLMModel.Value, Logger);
                 CooldownManager = new CooldownManager(Config.PerMobCooldownSeconds.Value);
                 OutputManager = new OutputManager(Config, Logger);
                 TaskManager = new TaskManager(Logger);

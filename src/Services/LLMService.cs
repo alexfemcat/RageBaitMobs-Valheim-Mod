@@ -12,11 +12,13 @@ namespace RagebateMobs.Services
     {
         private static readonly HttpClient HttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         private readonly string _apiUrl;
+        private readonly string _model;
         private readonly ManualLogSource _logger;
 
-        public LLMService(string apiUrl, ManualLogSource logger)
+        public LLMService(string apiUrl, string model, ManualLogSource logger)
         {
             _apiUrl = apiUrl.TrimEnd('/');
+            _model = model;
             _logger = logger;
         }
 
@@ -26,7 +28,7 @@ namespace RagebateMobs.Services
             {
                 var payload = new
                 {
-                    model = "gemma-3",
+                    model = _model,
                     messages = new[] { new { role = "user", content = prompt } },
                     temperature = 0.95,
                     max_tokens = 50,

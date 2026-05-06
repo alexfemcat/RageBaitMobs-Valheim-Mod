@@ -18,6 +18,8 @@ namespace RagebateMobs.Configuration
         public ConfigEntry<float> MinDamageThreshold { get; private set; }
         public ConfigEntry<bool> DebugLogging { get; private set; }
 
+        public ConfigEntry<string> LLMModel { get; private set; }
+
         public ModConfig(ConfigFile config)
         {
             Enabled = config.Bind(
@@ -25,6 +27,13 @@ namespace RagebateMobs.Configuration
                 "Enabled",
                 true,
                 "Enable the mod entirely"
+            );
+
+            LLMModel = config.Bind(
+                "API",
+                "LLMModel",
+                "mistralai/ministral-3-3b",
+                "LLM model to use (mistralai/ministral-3-3b recommended for authentic trash talk)"
             );
 
             OutputMode = config.Bind(

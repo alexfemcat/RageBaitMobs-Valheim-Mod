@@ -39,14 +39,14 @@ def test_lm_studio(api_url="http://localhost:1234/v1"):
         # Test 3: Send a test chat completion
         print("[3] Testing chat completion endpoint...")
         test_payload = {
-            "model": "gemma-3",
+            "model": "mistralai/ministral-3-3b",
             "messages": [
                 {
                     "role": "user",
-                    "content": "You are a Greydwarf. A player just hit you. Write a one-sentence toxic insult."
+                    "content": "Greydwarf: A player just hit you. Respond with ONE sentence of brutal trash talk. Be extremely crude, profane, and mean. Make sexual/genital insults. Examples: 'Your dick is small like your skill', 'You play like you got a limp dick', 'Skill issue you suck ass', 'Fuck off dogwater'. Be as offensive as possible."
                 }
             ],
-            "temperature": 0.9,
+            "temperature": 0.95,
             "max_tokens": 50,
             "top_p": 0.95
         }
