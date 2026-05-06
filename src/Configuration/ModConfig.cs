@@ -9,6 +9,11 @@ namespace RagebateMobs.Configuration
     }
 
     public class ModConfig
+{
+    /// <summary>
+    /// Validate required configuration entries.
+    /// Throws if a mandatory field is missing or malformed.
+    /// </summary>
     {
         public ConfigEntry<bool> Enabled { get; private set; }
         public ConfigEntry<OutputMode> OutputMode { get; private set; }

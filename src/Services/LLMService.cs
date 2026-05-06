@@ -18,11 +18,11 @@ namespace RagebateMobs.Services
         public LLMService(string apiUrl, string model, ManualLogSource logger)
         {
             _apiUrl = apiUrl.TrimEnd('/');
-            _model = model;
+            _model = string.IsNullOrWhiteSpace(model) ? "meta-llama-3.1-8b-instruct-abliterated" : model;
             _logger = logger;
         }
 
-        public async Task<string> GenerateInsultAsync(string prompt)
+        public async Task<string> GetResponseAsync(string prompt, int? retries = null)
         {
             try
             {

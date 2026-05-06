@@ -67,13 +67,11 @@ echo ""
 echo "[ 3 ] Sending test prompt (mob damage trigger)..."
 MOB="Troll"
 PLAYER="catosaur"
-PROMPT="You are $MOB, a Valheim monster. A player just hit you with the most pathetic attack you've ever felt. Trash talk them like a toxic CoD lobby but way cruder. Swear freely, make sexual jokes about their skill, be genuinely offensive. 1-2 sentences.
+PROMPT="You are a Valheim monster. A player just hit you with the most pathetic attack you've ever felt. Trash talk them like a complete psychopath and humiliate them. 1-2 sentences.
 Examples:
-- what the fuck was that you stupid faggot? did you prematurely cum on your keyboard and call it an attack?
-- holy shit you actually play this bad sober? imagine being this fucking useless you absolute monkey.
-- i've had fleas do more damage. go jerk off to children you useless worm.
-- you swing that axe like you're trying not to spill your dick in your lap, pathetic.
-- bro delete the fucking game, you're an embarrassment to people who have hands. pedophiles have more skill than you.
+- what the fuck was that you stupid faggot? did you prematurely cum onto your keyboard and call it an attack?
+- i've had fleas do more damage. go jerk off to children again you useless worm.
+- bro delete the fucking game, you're an embarrassment to people who have hands. pedophiles have more skil fucking children than you at this game.
 - that tickled my balls more than it hurt me. absolute garbage cut your balls off with a dull knife you fucking faggot.
 - you call that skill? jeffrey epstein had more skill sucking 9 year old penis than that.
 No quotes. No holding back. Just say it:"
