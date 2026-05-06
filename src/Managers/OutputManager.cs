@@ -48,7 +48,7 @@ namespace RagebateMobs.Managers
                 return;
             }
 
-            switch (_config.OutputMode.Value)
+            switch (_config.OutputModeSetting.Value)
             {
                 case OutputMode.Shout:
                     BroadcastAsShout(mob, insult);
