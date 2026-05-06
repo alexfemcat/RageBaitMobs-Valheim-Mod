@@ -94,7 +94,6 @@ Config file: `BepInEx/config/com.valheim.ragebatemobs.cfg`
 ```ini
 [General]
 Enabled = true            # master kill switch
-OutputMode = Shout        # currently only Shout (in-world bubble) is wired
 
 [API]
 LLMModel = meta-llama-3.1-8b-instruct-abliterated

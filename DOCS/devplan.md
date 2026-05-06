@@ -54,7 +54,7 @@ DoAttack / ApplyDamage postfix
 
 ## Phase 3: Configuration ✅ COMPLETE
 - [x] `src/Configuration/ModConfig.cs`
-- [x] `[General]` Enabled, OutputMode
+- [x] `[General]` Enabled
 - [x] `[API]` LLMModel, LMStudioApiUrl (default `http://localhost:1234/v1`)
 - [x] `[Cooldowns]` PerMobCooldownSeconds (default 5), MaxSimultaneousInsults (default 5)
 - [x] `[Triggers]` MinDamageThreshold (default 5)
@@ -90,8 +90,8 @@ DoAttack / ApplyDamage postfix
 
 ## Phase 8: Polish
 - [ ] Cleanup `_callCount <= 3` first-fire diagnostic logging once trigger flow is verified.
-- [ ] Add a server-side max-in-flight LLM semaphore (so 10 simultaneous hits don't fan out 10 concurrent LM Studio calls).
-- [ ] Optional: implement `OutputMode = Chat` path (currently Shout-only via `ChatMessage` RPC).
+- [x] Add a server-side max-in-flight LLM semaphore (so 10 simultaneous hits don't fan out 10 concurrent LM Studio calls).
+- [x] Fix CooldownManager memory leak — prune stale _lastTalk entries after 200 entries or 5 minutes idle.
 - [ ] Cache localized mob names client-side.
 - [ ] Document hybrid architecture and required client install in README.
 

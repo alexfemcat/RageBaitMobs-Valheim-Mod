@@ -77,7 +77,7 @@ namespace RagebateMobs.Network
                 }
 
                 MainThreadDispatcher.Enqueue(() => Broadcast(mobId, mobName, insult));
-            });
+            }, RagebateMobsPlugin.LlmSemaphore);
         }
 
         // Server-side broadcast on the main thread.

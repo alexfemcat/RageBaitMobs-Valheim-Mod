@@ -2,14 +2,11 @@ using BepInEx.Configuration;
 
 namespace RagebateMobs.Configuration
 {
-    public enum OutputMode { Shout, Chat }
-
     public class ModConfig
     {
         private readonly ConfigFile _config;
 
         public ConfigEntry<bool> Enabled { get; private set; }
-        public ConfigEntry<OutputMode> OutputModeSetting { get; private set; }
 
         public ConfigEntry<string> LLMModel { get; private set; }
         public ConfigEntry<string> LMStudioApiUrl { get; private set; }
@@ -27,8 +24,6 @@ namespace RagebateMobs.Configuration
 
             Enabled = _config.Bind("General", "Enabled", true,
                 "Enable the mod entirely");
-            OutputModeSetting = _config.Bind("General", "OutputMode", OutputMode.Shout,
-                "How mobs deliver their insults (Shout = yellow speech bubble, Chat = server chat)");
 
             LLMModel = _config.Bind("API", "LLMModel", "meta-llama-3.1-8b-instruct-abliterated",
                 "LLM model to use");
@@ -38,7 +33,7 @@ namespace RagebateMobs.Configuration
             PerMobCooldownSeconds = _config.Bind("Cooldowns", "PerMobCooldownSeconds", 10,
                 "Minimum seconds before the SAME mob speaks again");
             MaxSimultaneousInsults = _config.Bind("Cooldowns", "MaxSimultaneousInsults", 5,
-                "Max insults broadcast on the same frame (prevents spam)");
+                "Max LLM calls in flight at once");
 
             MinDamageThreshold = _config.Bind("Triggers", "MinDamageThreshold", 5f,
                 "Minimum damage needed to trigger a taunt (0 = all damage triggers)");

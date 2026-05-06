@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using BepInEx.Logging;
 
@@ -27,6 +28,34 @@ namespace RagebateMobs.Managers
                 else if (task.IsCanceled)
                 {
                     _logger.LogDebug("[Ragebait] Async task was cancelled");
+                }
+            });
+        }
+
+        public void SafeFireAndForgetAsync(Func<Task> asyncFunc, SemaphoreSlim sem)
+        {
+            if (asyncFunc == null)
+                return;
+
+            SafeFireAndForgetAsync(async () =>
+            {
+                if (sem == null)
+                {
+                    await asyncFunc();
+                    return;
+                }
+                if (!sem.Wait(0))
+                {
+                    _logger.LogDebug("[Ragebait] LLM semaphore full, skipping request");
+                    return;
+                }
+                try
+                {
+                    await asyncFunc();
+                }
+                finally
+                {
+                    sem.Release();
                 }
             });
         }

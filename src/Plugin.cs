@@ -1,3 +1,4 @@
+using System.Threading;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -21,6 +22,7 @@ namespace RagebateMobs
         public static LLMService LLMService { get; private set; }
         public static CooldownManager CooldownManager { get; private set; }
         public static TaskManager TaskManager { get; private set; }
+        public static SemaphoreSlim LlmSemaphore { get; private set; }
 
         private static Harmony _harmony;
 
@@ -35,6 +37,7 @@ namespace RagebateMobs
                 LLMService = new LLMService(Config.LMStudioApiUrl.Value, Config.LLMModel.Value, Logger);
                 CooldownManager = new CooldownManager(Config.PerMobCooldownSeconds.Value);
                 TaskManager = new TaskManager(Logger);
+                LlmSemaphore = new SemaphoreSlim(Config.MaxSimultaneousInsults.Value);
 
                 MainThreadDispatcher.Initialize();
                 ApplyPatches();
@@ -72,6 +75,7 @@ namespace RagebateMobs
         {
             _harmony?.UnpatchSelf();
             CooldownManager?.Clear();
+            LlmSemaphore?.Dispose();
             Logger.LogInfo("[Viking Ragebait] Unloaded.");
         }
     }
