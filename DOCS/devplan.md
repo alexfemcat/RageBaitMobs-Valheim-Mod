@@ -105,71 +105,68 @@
 
 ---
 
-## Phase 5: Message Broadcasting & Output
+## Phase 5: Message Broadcasting & Output ✅ COMPLETE
 
 ### Broadcast/Output Manager (SERVER-SIDE ONLY)
-- [ ] Create `src/Managers/OutputManager.cs` with:
-  - [ ] Method: `BroadcastInsult(string mobName, string insult)` → void
-  - [ ] **CRITICAL:** Use ONLY vanilla Valheim features that work on unmodded clients
-  - [ ] Logic branch based on `ModConfig.OutputMode`:
-    - [ ] **Shout Mode (Preferred for vanilla clients):**
-      - [ ] Use `Character.Say(insult)` on the mob character
-      - [ ] Displays yellow speech bubble over mob's head (vanilla feature)
-      - [ ] Visible to all connected players automatically
-      - [ ] No custom RPC needed — vanilla feature
-    - [ ] **Chat Mode:**
-      - [ ] Use `Chat.instance.SendMessage(insult)` or similar
-      - [ ] Broadcasts to all players' chat logs
-      - [ ] Format: `[MOB NAME]: insult text`
-      - [ ] Vanilla feature, no client mod required
-  - [ ] **Server-side validation:**
-    - [ ] Only run on `if (!ZNet.instance.IsServer()) return;`
-    - [ ] Never instantiate client-side UI
-    - [ ] Never reference UnityEngine.UI or client-only components
+- [x] Create `src/Managers/OutputManager.cs` with:
+  - [x] Method: `BroadcastInsult(Character mob, string insult)` → void
+  - [x] **CRITICAL:** Use ONLY vanilla Valheim features that work on unmodded clients
+  - [x] Logic branch based on `ModConfig.OutputMode`:
+    - [x] **Shout Mode (Preferred for vanilla clients):**
+      - [x] Use `Character.Say(insult)` on the mob character
+      - [x] Displays yellow speech bubble over mob's head (vanilla feature)
+      - [x] Visible to all connected players automatically
+      - [x] No custom RPC needed — vanilla feature
+    - [x] **Chat Mode:**
+      - [x] Use `Chat.instance.SendMessage(insult)` 
+      - [x] Broadcasts to all players' chat logs
+      - [x] Format: `[MOB NAME]: insult text`
+      - [x] Vanilla feature, no client mod required
+  - [x] **Server-side validation:**
+    - [x] Only run on `if (!ZNet.instance.IsServer()) return;`
+    - [x] Never instantiate client-side UI
+    - [x] Never reference UnityEngine.UI or client-only components
+  - [x] **Per-frame message limiting:**
+    - [x] Frame counter to prevent 50 messages per instant
+    - [x] MaxSimultaneousInsults config (default: 5)
 
 ### Vanilla Feature Broadcasting (NO Custom RPC Needed)
-- [ ] **IMPORTANT: Do NOT use custom ZRoutedRpc for vanilla clients!**
-- [ ] Use vanilla `Character.Say()` and `Chat.instance.SendMessage()` only
-- [ ] These are built-in Valheim features that work on unmodded clients
-- [ ] No need for custom network protocols or RPC handlers
-- [ ] Example (Shout Mode):
-  ```csharp
-  var mob = /* get character */;
-  string insult = /* LLM response */;
-  mob.Say(insult);  // Server-side only, vanilla clients see it
-  ```
-- [ ] Example (Chat Mode):
-  ```csharp
-  Chat.instance.SendMessage($"[{mobName}]: {insult}");
-  // Appears in all players' chat logs, no mod required
-  ```
+- [x] **NO custom ZRoutedRpc for vanilla clients**
+- [x] Use vanilla `Character.Say()` and `Chat.instance.SendMessage()` only
+- [x] These are built-in Valheim features that work on unmodded clients
+- [x] No custom network protocols or RPC handlers
+- [x] Implemented with proper server-side checks
 
 ---
 
-## Phase 6: Integration & Error Handling
+## Phase 6: Integration & Error Handling ✅ COMPLETE
 
 ### Async Task Management
-- [ ] Create `src/Managers/TaskManager.cs` with:
-  - [ ] Method: `SafeFireAndForgetAsync(Task task)` → void
-  - [ ] Wraps async LLM calls to avoid log spam on failures
-  - [ ] Log exceptions without crashing mod
+- [x] Create `src/Managers/TaskManager.cs` with:
+  - [x] Method: `SafeFireAndForgetAsync(Func<Task> asyncFunc)` → void
+  - [x] Wraps async LLM calls to avoid log spam on failures
+  - [x] Catches exceptions and logs without crashing mod
+  - [x] Handles cancelled tasks gracefully
 
 ### Localization Fallback
-- [ ] In both patches, add fallback logic:
-  - [ ] If `Localization.instance.Localize()` returns null/empty
-  - [ ] Fall back to Character.name or internal name
-  - [ ] Log warning for debugging
+- [x] In both patches, add fallback logic:
+  - [x] If `Localization.instance.Localize()` returns null/empty
+  - [x] Fall back to Character.m_name or internal name
+  - [x] Implemented in both MonsterAI and Character patches
 
 ### Error Handling
-- [ ] In LLMService:
-  - [ ] Handle HttpRequestException (connection failure)
-  - [ ] Handle JsonException (malformed response)
-  - [ ] Handle TimeoutException (LM Studio unresponsive)
-  - [ ] Graceful degradation: log error, don't crash mod
-- [ ] In patches:
-  - [ ] Null-check for targets and characters
-  - [ ] Null-check for Character.m_name before localization
-  - [ ] Catch exceptions in async callbacks
+- [x] In LLMService:
+  - [x] Handle HttpRequestException (connection failure)
+  - [x] Handle JsonException (malformed response)
+  - [x] Handle TaskCanceledException (timeout)
+  - [x] Graceful degradation: returns null, logs warning
+- [x] In patches:
+  - [x] Null-check for mob/target/attacker characters
+  - [x] Null-check for Character.m_name before localization
+  - [x] Fire-and-forget pattern prevents blocking
+- [x] In OutputManager:
+  - [x] Null-checks before broadcasting
+  - [x] Server-side validation before any output
 
 ---
 
@@ -359,12 +356,14 @@
 
 | Task | Status |
 |---|---|
-| Phase 1: Project Setup | ✅ |
-| Phase 2: LLM Integration | ✅ |
-| Phase 3: Config & Cooldowns | ✅ |
-| Phase 4: Patches & Plugin | ✅ |
-| Phase 5: Broadcasting | ✅ |
-| Phase 6: Error Handling | ⏳ (implicit in Phase 4) |
-| Phase 7: Testing | ❌ |
-| Phase 8: Polish | ❌ |
-| Phase 9: Deployment | ❌ |
+| Phase 1: Project Setup & Infrastructure | ✅ COMPLETE |
+| Phase 2: Core LLM Integration | ✅ COMPLETE |
+| Phase 3: Configuration & Cooldown Management | ✅ COMPLETE |
+| Phase 4: Core Plugin & Harmony Patches | ✅ COMPLETE |
+| Phase 5: Message Broadcasting & Output | ✅ COMPLETE |
+| Phase 6: Integration & Error Handling | ✅ COMPLETE |
+| Phase 7: Configuration & Testing | ❌ Pending |
+| Phase 8: Polish & Optimization | ❌ Pending |
+| Phase 9: Deployment & Distribution | ❌ Pending |
+
+**Core Implementation: 66% Complete** (6/9 phases)
