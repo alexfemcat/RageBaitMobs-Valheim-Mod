@@ -1,3 +1,4 @@
+using System;
 using RagebateMobs.Services;
 using UnityEngine;
 
@@ -6,9 +7,11 @@ namespace RagebateMobs.Network
     // Hybrid network protocol:
     //   Modded client --[RagebateMobs_RequestRoast]--> Server (calls LLM)
     //   Server        --[RagebateMobs_RoastBroadcast]--> Modded clients (Chat.SetNpcText bubble)
+    //                  --[ChatMessage]----------------> Vanilla clients (local chat message)
     //
     // Vanilla clients can still join the server (soft dep). They don't send request RPCs and
     // they don't render the bubble (no handler), but they can play normally.
+    // We send them a local ChatMessage instead of our custom RPC so they see the insult.
     public static class RoastRpc
     {
         public const string RequestRpc = "RagebateMobs_RequestRoast";
@@ -85,16 +88,18 @@ namespace RagebateMobs.Network
                     return;
                 }
 
-                MainThreadDispatcher.Enqueue(() => Broadcast(mobId, mobName, insult));
+                MainThreadDispatcher.Enqueue(() => Broadcast(mobId, mobName, insult, sender));
             }, RagebateMobsPlugin.LlmSemaphore);
         }
 
         // Server-side broadcast on the main thread.
         // Custom routed RPC; modded clients render via Chat.SetNpcText. Vanilla clients ignore it.
-        private static void Broadcast(ZDOID mobId, string mobName, string insult)
+        // For vanilla clients, we send a local ChatMessage to the target player only.
+        private static void Broadcast(ZDOID mobId, string mobName, string insult, long targetPeer = -1)
         {
             if (ZRoutedRpc.instance == null) return;
 
+            // Send custom RPC for modded clients (bubble)
             var pkg = new ZPackage();
             pkg.Write(mobId);
             pkg.Write(mobName ?? "");
@@ -102,7 +107,34 @@ namespace RagebateMobs.Network
 
             ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, BroadcastRpc, pkg);
 
+            // For vanilla clients, send a local chat message to the target player only
+            if (targetPeer > 0)
+            {
+                SendVanillaChatMessage(targetPeer, mobName, insult);
+            }
+
             RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName}: {insult}");
+        }
+
+        // Send a vanilla ChatMessage RPC specifically to a single peer
+        // This makes the insult appear in that player's local chat
+        private static void SendVanillaChatMessage(long targetPeer, string senderName, string message)
+        {
+            try
+            {
+                var pkg = new ZPackage();
+                pkg.Write(senderName ?? "Mob");
+                pkg.Write(message ?? "");
+                pkg.Write((long)0); // senderSteamID = 0 for system/mob messages
+
+                // Route to specific peer only, not everybody
+                ZRoutedRpc.instance.InvokeRoutedRPC(targetPeer, "ChatMessage", pkg);
+                RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] Sent vanilla chat to peer {targetPeer}: {senderName}: {message}");
+            }
+            catch (Exception ex)
+            {
+                RagebateMobsPlugin.Logger.LogWarning($"[Ragebait] Failed to send vanilla chat: {ex.Message}");
+            }
         }
 
         // Client-side handler. Renders an NPC speech bubble above the mob's head.
