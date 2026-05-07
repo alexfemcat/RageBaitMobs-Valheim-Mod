@@ -1,5 +1,6 @@
 using HarmonyLib;
 using RagebateMobs.Network;
+using RagebateMobs.Services;
 
 namespace RagebateMobs.Patches
 {
@@ -35,7 +36,13 @@ namespace RagebateMobs.Patches
 
             string playerName = (target as Player)?.GetPlayerName() ?? "player";
 
-            RoastRpc.SendRequest(nv.GetZDO().m_uid, mobName, playerName, "spotted_player", mobType);
+            var (buddyId, buddyName, buddyType) = ScanHelpers.FindBuddy(mob);
+            var (rivalId, rivalName, rivalType) = ScanHelpers.FindRival(mob);
+
+            RoastRpc.SendRequest(
+                nv.GetZDO().m_uid, mobName, playerName, "spotted_player", mobType,
+                buddyId, buddyName, buddyType,
+                rivalId, rivalName, rivalType);
         }
     }
 }

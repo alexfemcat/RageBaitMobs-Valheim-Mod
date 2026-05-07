@@ -24,6 +24,7 @@ namespace RagebateMobs
         public static CooldownManager CooldownManager { get; private set; }
         public static TaskManager TaskManager { get; private set; }
         public static KillCountManager KillCountManager { get; private set; }
+        public static BettingManager BettingManager { get; private set; }
         public static SemaphoreSlim LlmSemaphore { get; private set; }
 
         private static Harmony _harmony;
@@ -42,6 +43,7 @@ namespace RagebateMobs
 
                 string savePath = Path.Combine(Paths.ConfigPath, "ragebatemobs_kills.json");
                 KillCountManager = new KillCountManager(savePath);
+                BettingManager = new BettingManager();
 
                 LlmSemaphore = new SemaphoreSlim(Config.MaxSimultaneousInsults.Value);
 
@@ -62,6 +64,8 @@ namespace RagebateMobs
             ApplyOne(typeof(MonsterAITargetingPatch), "MonsterAI.DoAttack");
             ApplyOne(typeof(CharacterDamagePatch), "Character.ApplyDamage");
             ApplyOne(typeof(PlayerDeathPatch), "Character.ApplyDamage (death)");
+            ApplyOne(typeof(MobDeathPatch), "Character.ApplyDamage (mob death)");
+            ApplyOne(typeof(MobLowHealthPatch), "Character.ApplyDamage (low-hp hype)");
             ApplyOne(typeof(ZNetAwakePatch), "ZNet.Awake");
         }
 
@@ -83,6 +87,7 @@ namespace RagebateMobs
             _harmony?.UnpatchSelf();
             CooldownManager?.Clear();
             KillCountManager?.Save();
+            BettingManager?.Clear();
             LlmSemaphore?.Dispose();
             Logger.LogInfo("[Viking Ragebait] Unloaded.");
         }

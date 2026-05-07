@@ -1,5 +1,6 @@
 using HarmonyLib;
 using RagebateMobs.Network;
+using RagebateMobs.Services;
 
 namespace RagebateMobs.Patches
 {
@@ -35,8 +36,16 @@ namespace RagebateMobs.Patches
             string mobType = mob.name;
             string playerName = player?.GetPlayerName() ?? __instance.GetHoverName();
 
+            // Look for a nearby same-type buddy and a nearby rival species so the server
+            // can fire a call-and-response and/or a rivalry burst.
+            var (buddyId, buddyName, buddyType) = ScanHelpers.FindBuddy(mob);
+            var (rivalId, rivalName, rivalType) = ScanHelpers.FindRival(mob);
+
             RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} hit {playerName} for {dmg:F1} dmg, requesting roast");
-            RoastRpc.SendRequest(nv.GetZDO().m_uid, mobName, playerName, "took_damage", mobType);
+            RoastRpc.SendRequest(
+                nv.GetZDO().m_uid, mobName, playerName, "took_damage", mobType,
+                buddyId, buddyName, buddyType,
+                rivalId, rivalName, rivalType);
         }
     }
 }

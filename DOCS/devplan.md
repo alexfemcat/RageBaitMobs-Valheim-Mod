@@ -131,55 +131,48 @@ DoAttack / ApplyDamage postfix
 
 ---
 
-## Phase 11: Victory & Death Interactions
+## Phase 11: Victory & Death Interactions ✅ COMPLETE
 
-### 11.1 - Player Victory Quotes ⬜
-- Design: when player KILLS a mob, mob delivers "last words" as it dies
-- New trigger: `player_killed_mob` (requires hooking mob death event)
-- Prompt context: mob is dying, player just killed them, flavor is "defiant but doomed"
-- Mob's personality still applies - a Troll might say "You got lucky, idiot", Draugr might say "This... changes nothing..."
-- Different trigger name in bubble? Maybe subtle badge or just normal bubble
-- Implementation: patch `Character.MarkAsDeath()` or `DoDamage` to detect mob death from player
-- Cooldown: separate cooldown from other triggers, maybe 10s per mob type
+### 11.1 - Player Victory Quotes ✅ COMPLETE
+- [x] New trigger `player_killed_mob` fires when a player lands the killing blow on a mob
+- [x] New patch `MobDeathPatch.cs` postfixes `Character.ApplyDamage`: detects mob HP <= 0 with player attacker
+- [x] Per-mob cooldown bypassed for the death trigger (mob's only chance to speak before despawn)
+- [x] Prompt context: "You are DYING... last defiant words... stay in character"
+- [x] Personality still applies — Troll, Draugr etc keep their voice while dying
 
-### 11.2 - Mob Call & Response ⬜
-- Design: when multiple mobs of SAME TYPE are near each other (within 20m), they do back-and-forth roasts
-- Mob A triggers roast, mob B follows up 1-2 seconds later with a response
-- Call: "[MobName]: roast", Response: "[Same MobName 2]: callback/reference to what MobA said"
-- Example: Greydwarf 1: "He's terrible at this game." Greydwarf 2: "Yeah, worse than the last guy we killed."
-- Requires tracking nearby same-type mobs when roast triggers
-- Rate limit: only do call-response every 30s per mob group
-- Only works when mob is actively engaged (targeting player or recently hit player)
+### 11.2 - Mob Call & Response ✅ COMPLETE
+- [x] Client-side scan in `NearbyMobScanner` finds nearby same-type buddy within 20m
+- [x] Patches (`MonsterAITargetingPatch`, `CharacterDamagePatch`) include candidate ZDOID/name in RPC packet
+- [x] Server `RoastRpc.OnRequest` schedules a delayed (~1.5s) follow-up from candidate
+- [x] `PromptBuilder.BuildCallResponsePrompt` references the original insult so the response builds on it
+- [x] Group-cooldown of 30s per mob type (prevents spam chains)
+- [x] Skipped on `player_died` / `player_killed_mob` to avoid post-mortem chatter
 
 ---
 
-## Phase 12: Mob Social Features
+## Phase 12: Mob Social Features ✅ COMPLETE
 
-### 12.1 - Mob Rivalries ⬜
-- Design: certain mob types have rivalries and insult each other when nearby
-- Rivalry pairs: Greydwarf vs Skeleton, Draugr vs Wraith, Goblin vs Wolf
-- When rival mobs are within 30m of each other AND one targets player, they trash-talk each other
-- Flavor: caught in the crossfire of monster beef
-- Implementation: track rival group pairs, check distance on roast trigger
-- Rate limit: once per 45s per rivalry pair per zone
-- Example: Skeleton: "At least we're not green and stupid." Greydwarf: "At least we have working arms."
+### 12.1 - Mob Rivalries ✅ COMPLETE
+- [x] Rivalry pairs defined in `ScanHelpers.Rivals`: Greydwarf↔Skeleton, Draugr↔Wraith/Ghost, Goblin↔Wolf/Fenring
+- [x] Client scans for rival species within 30m and includes in RPC packet (rivalMobId/Name/Type)
+- [x] Server `ScheduleRivalry` delays ~2s, calls `PromptBuilder.BuildRivalryPrompt` to mock the rival species
+- [x] Player gets caught in crossfire — prompt instructs mob to attack rival species, not player
+- [x] Symmetric rivalry-pair group cooldown of 45s (`RivalryKey` normalizes side order)
 
-### 12.2 - Mob Hype Man ⬜
-- Design: when a mob is LOW HEALTH (below 30%), nearby same-type mobs defend it
-- Hype: "[Hurt Mob] is losing! Someone help!" / "Leave [Mob] alone!"
-- Mob that just helped gets a "protecting friend" personality boost
-- Requires tracking mob health on each damage event
-- Rate limit: every 20s per mob group
-- Only triggers if player is actively damaging the hurt mob
+### 12.2 - Mob Hype Man ✅ COMPLETE
+- [x] New patch `MobLowHealthPatch.cs` postfixes `Character.ApplyDamage`, fires when mob HP/MaxHP < 30%
+- [x] Scans for same-type buddy within 25m; the buddy is the broadcaster (the hyper)
+- [x] Hurt mob's name passed via candidate slot so prompt can name the friend being defended
+- [x] `PromptBuilder.BuildHypeManPrompt` instructs hyper to defend friend and threaten the player
+- [x] Group cooldown of 20s per mob type prevents hype spam
 
-### 12.3 - Mob Betting ⬜
-- Design: when player is fighting a mob, nearby same-type mobs bet on the outcome
-- Bet: "[Mob]: 20 bucks he dies in 30 seconds." / "[Mob]: I'm saying he pulls through."
-- Outcome reveals after fight ends (player lives or dies)
-- Winner mob delivers a gloating or disappointed line
-- Track fight start time, nearby bettors, outcome after 30s
-- Rate limit: once per 60s per mob group
-- Config: enable/disable betting feature
+### 12.3 - Mob Betting ✅ COMPLETE
+- [x] `BettingManager.cs` tracks open bets keyed by fighter mob ZDOID with 60s stale-prune
+- [x] Bets opened on `spotted_player` when same-type buddy nearby, 35% chance, with 60s group cooldown
+- [x] Bettor randomly assigned PLAYER-WIN or MOB-WIN side via `BuildBetPrompt`
+- [x] Bet resolves on `player_died` (mob won) or `player_killed_mob` (player won)
+- [x] Resolution fires gloat / whine line via `BuildBetOutcomePrompt`
+- [x] Bettor mob is the same nearby same-type buddy used for call-response (no extra packet bloat)
 
 ---
 
@@ -230,20 +223,25 @@ RagebateMobs/
 │   ├── Configuration/
 │   │   └── ModConfig.cs
 │   ├── Managers/
-│   │   ├── CooldownManager.cs
+│   │   ├── CooldownManager.cs       # mob + group cooldowns
 │   │   ├── TaskManager.cs
-│   │   └── KillCountManager.cs     # [NEW] player death tracking
+│   │   ├── KillCountManager.cs      # player death tracking
+│   │   └── BettingManager.cs        # [Phase 12.3] open/resolve bets
 │   ├── Network/
-│   │   ├── RoastRpc.cs
+│   │   ├── RoastRpc.cs              # extended packet (candidate + rival)
 │   │   └── MainThreadDispatcher.cs
 │   ├── Patches/
-│   │   ├── MonsterAITargetingPatch.cs
-│   │   ├── CharacterDamagePatch.cs
-│   │   ├── PlayerDeathPatch.cs      # [NEW] player death trigger
+│   │   ├── MonsterAITargetingPatch.cs # spotted_player + buddy/rival scan
+│   │   ├── CharacterDamagePatch.cs    # took_damage + buddy/rival scan
+│   │   ├── PlayerDeathPatch.cs        # player_died trigger
+│   │   ├── MobDeathPatch.cs           # [Phase 11.1] player_killed_mob
+│   │   ├── MobLowHealthPatch.cs       # [Phase 12.2] hype_man
 │   │   └── GameStartPatch.cs
 │   └── Services/
 │       ├── LLMService.cs
-│       └── PromptBuilder.cs
+│       ├── PromptBuilder.cs           # added call_response/rivalry/hype/bet builders
+│       ├── NearbyMobScanner.cs        # [Phase 11.2] same-type and rival-type scans
+│       └── ScanHelpers.cs             # rivalry pair definitions + radii
 └── TEST_SERVER/
 ```
 
@@ -262,10 +260,10 @@ RagebateMobs/
 | 7 — Kill Count Shame | ✅ |
 | 8 — Admin Commands | ❌ skipped |
 | 9 — Intensity Slider | ✅ |
-| 10 — Victory & Death Interactions | ⬜ pending (11.1, 11.2) |
-| 11 — Mob Social Features | ⬜ pending (12.1, 12.2, 12.3) |
-| 12 — Polish | ⬜ pending |
-| 13 — Distribution | ⬜ pending |
+| 11 — Victory & Death Interactions | ✅ |
+| 12 — Mob Social Features | ✅ |
+| 13 — Polish | ⬜ pending |
+| 14 — Distribution | ⬜ pending |
 
 ---
 
@@ -273,7 +271,7 @@ RagebateMobs/
 
 ## Implementation Order
 
-1. **Victory & Death Interactions** (Phase 11) — implement victory quotes and call-response
-2. **Mob Social Features** (Phase 12) — implement rivalries, hype man, and betting
+1. ✅ **Victory & Death Interactions** (Phase 11) — implement victory quotes and call-response
+2. ✅ **Mob Social Features** (Phase 12) — implement rivalries, hype man, and betting
 3. **Polish & Testing** (Phase 13) — clean up, test thoroughly
 4. **Distribution** (Phase 14) — tag release, update docs
