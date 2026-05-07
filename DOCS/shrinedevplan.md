@@ -31,7 +31,7 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 - Name text appears above shrine
 - Soft glow from base
 - Particles slowly rise
-- Fades out when player leaves (10m radius)
+- Fades out when player leaves (8m radius)
 
 ---
 
@@ -44,7 +44,7 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 5. LLM receives: spirit personality + chat message
 6. Spirit responds via speech bubble above shrine
 7. Player can continue chatting or walk away
-8. After player is 10m+ away for 5s, spirit deactivates
+8. After player is 8m+ away for 5s, spirit deactivates
 
 **No commands needed**. Just chat.
 
@@ -53,23 +53,23 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 ## Technical Implementation
 
 ### Placement
-- Buildable via hammer — new tab in building menu called "Shrines"
-- 4 shrine variants in tab, one per spirit type
-- Placed like any other Valheim structure — snaps to terrain, has footprint
-- Player decides placement, quantity, and location
-- Shares with friends when they visit your base
+- [ ] Buildable via hammer — new tab in building menu called "Shrines"
+- [ ] 4 shrine variants in tab, one per spirit type
+- [ ] Placed like any other Valheim structure — snaps to terrain, has footprint
+- [ ] Player decides placement, quantity, and location
+- [ ] Shares with friends when they visit your base
 
 ### State Management
-- `ShrineState`: { SpiritType, IsActive, ActivatingPlayer, DeactivateTimer }
-- Player within 10m + pressed E = active
-- Player leaves 10m radius + 5s timer = deactivate
-- Only one player can interact per shrine at a time
+- [ ] `ShrineState`: { SpiritType, IsActive, ActivatingPlayer, DeactivateTimer }
+- [ ] Player within 8m + pressed E = active
+- [ ] Player leaves 8m radius + 5s timer = deactivate
+- [ ] Only one player can interact per shrine at a time
 
 ### Chat Routing
-- Hook `PlayerChat` or equivalent
-- If player is near active shrine, intercept message
-- Send to LLM with shrine/spirit context
-- Return response as bubble above shrine (not as chat message)
+- [ ] Hook `PlayerChat` or equivalent
+- [ ] If player is near active shrine, intercept message
+- [ ] Send to LLM with shrine/spirit context
+- [ ] Return response as bubble above shrine (not as chat message)
 
 ### LLM Prompt Structure
 ```
@@ -90,6 +90,7 @@ Never break character. Never mention being an AI.
 ## Spirit Personalities
 
 ### Hralskuld the Defiant
+- [ ] Implement personality and prompts
 - "Gruff old warrior who died in his prime"
 - Comments on player combat: "Your footwork is atrocious."
 - Gives advice like a drill sergeant
@@ -97,6 +98,7 @@ Never break character. Never mention being an AI.
 - Favorite phrase: "In my day, we fought with HONOR."
 
 ### Mira the Wanderer
+- [ ] Implement personality and prompts
 - "Traveling merchant ghost who saw everything"
 - Knows gossip about all mob types
 - Shares rumors: "The Surtlings have been acting strange near the coast..."
@@ -104,6 +106,7 @@ Never break character. Never mention being an AI.
 - Asks about player's adventures
 
 ### Ulfgar the Oracle
+- [ ] Implement personality and prompts
 - "Hollow-eyed seer who speaks in riddles"
 - Prophecies are absurd non-sequiturs that somehow always apply
 - "I see... a death. Many deaths. Ah. That's just Tuesday."
@@ -111,6 +114,7 @@ Never break character. Never mention being an AI.
 - Never gives straight answers
 
 ### Briar of the Burial Mound
+- [ ] Implement personality and prompts
 - "Witch-like spirit of the burial mounds"
 - Mischievous, knows herb-lore
 - Makes potions sound like gossip: "Oh honey, that Troll? Known him for centuries. Total waste of space."
@@ -121,10 +125,10 @@ Never break character. Never mention being an AI.
 
 ## Config Options
 
-- `[Shrines] Enabled` — toggle shrine system on/off
-- `[Shrines] ChatRadius` — how close to shrine to activate (default 8m)
-- `[Shrines] DeactivateDelay` — seconds before spirit fades after player leaves (default 5s)
-- `[Shrines] ResponseDelay` — seconds between player message and spirit response (default 1s, prevents spam)
+- [ ] `[Shrines] Enabled` — toggle shrine system on/off
+- [ ] `[Shrines] ChatRadius` — how close to shrine to activate (default 8m)
+- [ ] `[Shrines] DeactivateDelay` — seconds before spirit fades after player leaves (default 5s)
+- [ ] `[Shrines] ResponseDelay` — seconds between player message and spirit response (default 1s, prevents spam)
 
 ---
 
@@ -150,26 +154,36 @@ src/
 
 ## Implementation Order
 
-1. **Hammer buildable** — add 4 shrine pieces to hammer building tab
-2. **Shrine prefab** — runestone model with spirit-colored particles/glow
-3. **E to interact** — detect keypress, activate shrine for that player
-4. **Basic chat routing** — intercept chat when shrine active and player nearby
-5. **LLM integration** — send/receive for one spirit type
-6. **Bubble response** — display LLM response above shrine
-7. **Spirit personalities** — implement all 4 spirit types
-8. **State management** — deactivation, proximity, one-player-at-a-time per shrine
+### Phase 1: Foundation
+- [ ] Hammer buildable — add 4 shrine pieces to hammer building tab
+- [ ] Shrine prefab — runestone model with spirit-colored particles/glow
+- [ ] E to interact — detect keypress, activate shrine for that player
+
+### Phase 2: Chat System
+- [ ] Basic chat routing — intercept chat when shrine active and player nearby
+- [ ] LLM integration — send/receive for one spirit type
+- [ ] Bubble response — display LLM response above shrine
+
+### Phase 3: Spirits
+- [ ] Spirit base class
+- [ ] Hralskuld the Defiant personality
+- [ ] Mira the Wanderer personality
+- [ ] Ulfgar the Oracle personality
+- [ ] Briar of the Burial Mound personality
+
+### Phase 4: Polish
+- [ ] State management — deactivation, proximity, one-player-at-a-time per shrine
+- [ ] Visual polish — particle colors, glow effects per spirit
+- [ ] Config options
+- [ ] Testing with multiple players
 
 ---
 
 ## Status
 
-| Step | Status |
+| Phase | Status |
 |---|---|
-| 1 — Shrine prefab & spawning | ⬜ pending |
-| 2 — E to interact | ⬜ pending |
-| 3 — Basic chat routing | ⬜ pending |
-| 4 — LLM integration | ⬜ pending |
-| 5 — Bubble response | ⬜ pending |
-| 6 — Spirit personalities | ⬜ pending |
-| 7 — State management | ⬜ pending |
-| 8 — Visual polish | ⬜ pending |
+| 1 — Foundation | ⬜ pending |
+| 2 — Chat System | ⬜ pending |
+| 3 — Spirits | ⬜ pending |
+| 4 — Polish | ⬜ pending |
