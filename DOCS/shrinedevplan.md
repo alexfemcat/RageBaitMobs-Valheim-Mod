@@ -6,7 +6,9 @@
 
 ## Concept
 
-Ancient runestones scattered across the world. Each runestone houses a trapped spirit. Press E to summon the spirit. Type normal chat to talk to it. Spirit responds via speech bubble above the shrine. Walk away when done.
+Buildable shrine structures. Each shrine houses a trapped spirit. Press E to summon the spirit. Type normal chat to talk to it. Spirit responds via speech bubble above the shrine. Walk away when done.
+
+**Player-placed via hammer, not world-spawned.** Players choose where to build their shrines. Can place multiple of the same type. Shares naturally with friends when they visit your base.
 
 ---
 
@@ -51,9 +53,11 @@ Ancient runestones scattered across the world. Each runestone houses a trapped s
 ## Technical Implementation
 
 ### Placement
-- World-placed prefabs via Heightmap.AddProxy()
-- 4 shrine variants, one per spirit type
-- ~5-10 spawns per biome, random distribution
+- Buildable via hammer — new tab in building menu called "Shrines"
+- 4 shrine variants in tab, one per spirit type
+- Placed like any other Valheim structure — snaps to terrain, has footprint
+- Player decides placement, quantity, and location
+- Shares with friends when they visit your base
 
 ### State Management
 - `ShrineState`: { SpiritType, IsActive, ActivatingPlayer, DeactivateTimer }
@@ -118,9 +122,9 @@ Never break character. Never mention being an AI.
 ## Config Options
 
 - `[Shrines] Enabled` — toggle shrine system on/off
-- `[Shrines] SpiritCount` — how many shrines spawn per biome
-- `[Shrines] ChatRadius` — how close to shrine to activate (default 10m)
+- `[Shrines] ChatRadius` — how close to shrine to activate (default 8m)
 - `[Shrines] DeactivateDelay` — seconds before spirit fades after player leaves (default 5s)
+- `[Shrines] ResponseDelay` — seconds between player message and spirit response (default 1s, prevents spam)
 
 ---
 
@@ -128,8 +132,8 @@ Never break character. Never mention being an AI.
 
 ```
 src/
-├── Structures/
-│   └── ShrineStructure.cs      # shrine prefab, spawning, state
+├── Buildings/
+│   └── ShrineBuilder.cs        # hammer building integration, 4 shrine pieces
 ├── Spirits/
 │   ├── SpiritBase.cs           # base class for spirits
 │   ├── HralskuldSpirit.cs      # warrior spirit
@@ -137,7 +141,7 @@ src/
 │   ├── UlfgarSpirit.cs         # oracle spirit
 │   └── BriarSpirit.cs          # witch spirit
 ├── Services/
-│   └── ShrineLLMService.cs     # LLM integration for shrines (separate from roast LLM)
+│   └── ShrineLLMService.cs     # LLM integration for shrines
 └── Patches/
     └── ShrineChatPatch.cs      # intercepts chat near active shrine
 ```
@@ -146,14 +150,14 @@ src/
 
 ## Implementation Order
 
-1. **Shrine prefab & spawning** — place runestones in world
-2. **E to interact** — detect keypress, activate shrine
-3. **Basic chat routing** — intercept chat when shrine active
-4. **LLM integration** — send/receive for one spirit type
-5. **Bubble response** — display LLM response above shrine
-6. **Spirit personalities** — implement all 4 spirit types
-7. **State management** — deactivation, proximity, one-player-at-a-time
-8. **Visual polish** — particle colors, glow effects per spirit
+1. **Hammer buildable** — add 4 shrine pieces to hammer building tab
+2. **Shrine prefab** — runestone model with spirit-colored particles/glow
+3. **E to interact** — detect keypress, activate shrine for that player
+4. **Basic chat routing** — intercept chat when shrine active and player nearby
+5. **LLM integration** — send/receive for one spirit type
+6. **Bubble response** — display LLM response above shrine
+7. **Spirit personalities** — implement all 4 spirit types
+8. **State management** — deactivation, proximity, one-player-at-a-time per shrine
 
 ---
 
