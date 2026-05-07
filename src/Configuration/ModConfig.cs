@@ -16,6 +16,8 @@ namespace RagebateMobs.Configuration
 
         public ConfigEntry<float> MinDamageThreshold { get; private set; }
 
+        public ConfigEntry<string> InsultIntensity { get; private set; }
+
         public ConfigEntry<bool> DebugLogging { get; private set; }
 
         public ModConfig(ConfigFile config)
@@ -37,6 +39,9 @@ namespace RagebateMobs.Configuration
 
             MinDamageThreshold = _config.Bind("Triggers", "MinDamageThreshold", 5f,
                 "Minimum damage needed to trigger a taunt (0 = all damage triggers)");
+
+            InsultIntensity = _config.Bind("General", "InsultIntensity", "Normal",
+                "Insult intensity: Mild, Normal, Spicy, or XXXtreme");
 
             DebugLogging = _config.Bind("Debug", "DebugLogging", false,
                 "Enable detailed logging for debugging");

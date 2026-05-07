@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using BepInEx;
 using BepInEx.Logging;
@@ -22,6 +23,7 @@ namespace RagebateMobs
         public static LLMService LLMService { get; private set; }
         public static CooldownManager CooldownManager { get; private set; }
         public static TaskManager TaskManager { get; private set; }
+        public static KillCountManager KillCountManager { get; private set; }
         public static SemaphoreSlim LlmSemaphore { get; private set; }
 
         private static Harmony _harmony;
@@ -37,6 +39,10 @@ namespace RagebateMobs
                 LLMService = new LLMService(Config.LMStudioApiUrl.Value, Config.LLMModel.Value, Logger);
                 CooldownManager = new CooldownManager(Config.PerMobCooldownSeconds.Value);
                 TaskManager = new TaskManager(Logger);
+
+                string savePath = Path.Combine(Paths.ConfigPath, "ragebatemobs_kills.json");
+                KillCountManager = new KillCountManager(savePath);
+
                 LlmSemaphore = new SemaphoreSlim(Config.MaxSimultaneousInsults.Value);
 
                 MainThreadDispatcher.Initialize();
@@ -55,6 +61,7 @@ namespace RagebateMobs
             _harmony = new Harmony(GUID);
             ApplyOne(typeof(MonsterAITargetingPatch), "MonsterAI.DoAttack");
             ApplyOne(typeof(CharacterDamagePatch), "Character.ApplyDamage");
+            ApplyOne(typeof(PlayerDeathPatch), "Character.ApplyDamage (death)");
             ApplyOne(typeof(ZNetAwakePatch), "ZNet.Awake");
         }
 
@@ -75,6 +82,7 @@ namespace RagebateMobs
         {
             _harmony?.UnpatchSelf();
             CooldownManager?.Clear();
+            KillCountManager?.Save();
             LlmSemaphore?.Dispose();
             Logger.LogInfo("[Viking Ragebait] Unloaded.");
         }

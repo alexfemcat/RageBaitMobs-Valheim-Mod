@@ -62,12 +62,19 @@ namespace RagebateMobs.Network
 
             if (mobId == ZDOID.None) return;
 
+            if (triggerType == "player_died")
+            {
+                RagebateMobsPlugin.KillCountManager.RecordKill(mobType, playerName);
+            }
+
             if (!RagebateMobsPlugin.CooldownManager.CanMobSpeak(mobId)) return;
             RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mobId);
 
+            string shameContext = RagebateMobsPlugin.KillCountManager.GetShameContext(mobType, playerName);
+
             RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} ({mobType}) -> {playerName} ({triggerType}) requested by peer {sender}, generating roast");
 
-            string prompt = PromptBuilder.BuildInsultPrompt(mobName, triggerType, playerName, mobType);
+            string prompt = PromptBuilder.BuildInsultPrompt(mobName, triggerType, playerName, mobType, shameContext, RagebateMobsPlugin.Config.InsultIntensity.Value);
 
             RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
             {

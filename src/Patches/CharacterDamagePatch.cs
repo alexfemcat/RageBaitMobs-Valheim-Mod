@@ -3,8 +3,6 @@ using RagebateMobs.Network;
 
 namespace RagebateMobs.Patches
 {
-    // Fires on whoever owns the player character (the player's own client).
-    // The modded client sends a routed RPC to the server, which calls the LLM and broadcasts.
     [HarmonyPatch(typeof(Character), nameof(Character.ApplyDamage))]
     public static class CharacterDamagePatch
     {
@@ -23,6 +21,7 @@ namespace RagebateMobs.Patches
             float dmg = hit?.GetTotalDamage() ?? 0f;
             if (dmg < RagebateMobsPlugin.Config.MinDamageThreshold.Value) return;
 
+            var player = __instance as Player;
             var mob = hit?.GetAttacker();
             if (mob == null || mob.IsPlayer()) return;
             if (mob.GetComponent<MonsterAI>() == null) return;
@@ -34,11 +33,9 @@ namespace RagebateMobs.Patches
             if (string.IsNullOrWhiteSpace(mobName)) mobName = mob.m_name;
 
             string mobType = mob.name;
-
-            string playerName = (__instance as Player)?.GetPlayerName() ?? __instance.GetHoverName();
+            string playerName = player?.GetPlayerName() ?? __instance.GetHoverName();
 
             RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} hit {playerName} for {dmg:F1} dmg, requesting roast");
-
             RoastRpc.SendRequest(nv.GetZDO().m_uid, mobName, playerName, "took_damage", mobType);
         }
     }
