@@ -37,19 +37,20 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 
 ## Interaction Flow
 
-1. Player approaches shrine, presses **E**
-2. Spirit name text appears above shrine: **[Ulfgar the Oracle]**
-3. Spirit may greet unprompted: "Another fool seeks my wisdom. Speak."
-4. Player types in local chat normally
-5. Message is intercepted by mod (only when shrine is "active" and player is near)
-6. LLM receives: spirit personality + conversation history + player message
-7. Spirit responds via speech bubble above shrine
-8. Spirit may ask follow-up questions to keep conversation flowing
-9. Player can continue chatting or walk away
-10. After player is 8m+ away for 5s, spirit deactivates but remembers the player
-11. When player returns, spirit recalls previous conversation: "Back again. Couldn't stay away."
+1. Player approaches shrine, presses **E** to **focus** on shrine
+2. Shrine becomes "focused" for that player — indicated visually
+3. Spirit name text appears above shrine: **[Ulfgar the Oracle]**
+4. Hardcoded greeting displays (not LLM): "Another fool seeks my wisdom. Speak."
+5. Player types in local chat while focused — messages go to LLM
+6. If player is NOT focused, normal chat works normally (won't trigger spirit)
+7. While in queue for LLM response, spirit shows "thinking" indicator (lore-friendly): "The spirit falls silent, contemplating..."
+8. Spirit responds via speech bubble above shrine (only focused player sees it)
+9. Spirit may ask follow-up questions to keep conversation flowing
+10. Player walks away — shrine unfocuses, conversation ends, spirit deactivates
+11. When player returns and focuses again, spirit recalls memory: "Back again. Couldn't stay away."
+12. If another player tries to focus while shrine is in use, they see: "The shrine is already occupied. Wait."
 
-**No commands needed**. Just chat. Spirit handles the conversation.
+**No commands needed**. Just focus (E) then chat. Walk away to end.**
 
 ---
 
@@ -63,45 +64,51 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 - [ ] Shares with friends when they visit your base
 
 ### State Management
-- [ ] `ShrineState`: { SpiritType, IsActive, ActivatingPlayer, DeactivateTimer }
-- [ ] Player within 8m + pressed E = active
-- [ ] Player leaves 8m radius + 5s timer = deactivate
-- [ ] Only one player can interact per shrine at a time
+- [ ] `ShrineState`: { SpiritType, IsFocused, FocusedPlayer, DeactivateTimer }
+- [ ] Player presses E within 8m = shrine becomes "focused" for that player
+- [ ] While focused, player's chat is intercepted and sent to LLM
+- [ ] If another player presses E while shrine is focused: deny with "The shrine is already occupied"
+- [ ] Player walks away (beyond 8m) = unfocused, conversation ends immediately
+- [ ] JSON memory saves when player unfocuses
 
 ### Chat Routing
 - [ ] Hook `PlayerChat` or equivalent
-- [ ] If player is near active shrine, intercept message
-- [ ] Send to LLM with shrine/spirit context
-- [ ] Return response as bubble above shrine (not as chat message)
+- [ ] Only intercept chat if player is "focused" on shrine
+- [ ] If player is NOT focused, normal chat passes through normally
+- [ ] Send to shrine's own LLM queue (separate from roast queue)
+- [ ] While waiting/processing, show thinking indicator above shrine (lore-friendly)
+- [ ] Return response as bubble to focused player only
 
 ### LLM Prompt Structure
 ```
 [System]
 You are {SpiritName}, {SpiritPersonality}.
-You are bound to an ancient runestone. A mortal approaches to speak with you.
+You are bound to an ancient runestone. A mortal speaks to you.
 Keep responses SHORT (1-2 sentences). Be in character.
 Ask follow-up questions. Don't just answer — ENGAGE.
 If asked about the future, give cryptic non-sequitur prophecies.
 If asked about lore, make up believable but absurd details.
-Sometimes say things unprompted. Keep conversation flowing.
-Reference earlier parts of the conversation.
+Reference earlier parts of the conversation naturally.
 Never break character. Never mention being an AI.
 
-[Conversation History - last 20 messages]
+[Conversation History - last 20 messages, sent only after first few exchanges]
 {history}
 
 [Player Message]
 {player_message}
 ```
 
+**Note**: Greeting is hardcoded (not LLM). History is not sent on first 2-3 messages — only builds up after conversation starts to save tokens.
+
 ### Conversation System
 - [ ] **Conversation History**: Keep last 20 messages per shrine-session (player + spirit)
+- [ ] **History Warming**: First 2-3 messages sent without history. History only appended after context is established.
 - [ ] **Spirit Asks Questions**: Spirit doesn't just answer — it asks things too. "Oh really? Which mob hit you?" "And did you learn nothing from that?"
 - [ ] **Session Memory**: While shrine is active for a player, conversation continues naturally. Spirit tracks what you discussed.
-- [ ] **Player Recall**: Spirit remembers player across sessions (stored in JSON). Returns after 10 min? Spirit notices: "Thought you'd never come back."
-- [ ] **Proactive Interjection**: Sometimes spirit speaks unprompted after player message. "You seem troubled. Anyway, as I was saying..."
-- [ ] **JSON Persistence**: `shrines_memory.json` in config folder. Schema: `{ playerId -> shrineInstanceId -> { lastVisit, conversationNotes, flags } }`
-- [ ] **Memory Pruning**: Limit stored memories per player-shrine to 10KB. Prune old entries if exceeded.
+- [ ] **Player Recall**: Spirit remembers player across sessions (stored in JSON). Returns later? Spirit notices: "Thought you'd never come back."
+- [ ] **JSON Persistence**: `shrines_memory.json` in config folder. Schema: `{ playerId -> shrineInstanceId -> { lastVisit, memoryNotes, flags } }`
+- [ ] **Memory Storage**: Only store *significant* things player said/did. Not full history. Keep under 10KB per player-shrine.
+- [ ] **Memory Pruning**: Prune entries if file exceeds 1MB total.
 
 ---
 
@@ -144,9 +151,9 @@ Never break character. Never mention being an AI.
 ## Config Options
 
 - [ ] `[Shrines] Enabled` — toggle shrine system on/off
-- [ ] `[Shrines] ChatRadius` — how close to shrine to activate (default 8m)
-- [ ] `[Shrines] DeactivateDelay` — seconds before spirit fades after player leaves (default 5s)
-- [ ] `[Shrines] ResponseDelay` — seconds between player message and spirit response (default 1s, prevents spam)
+- [ ] `[Shrines] ChatRadius` — how close to shrine to focus (default 8m)
+- [ ] `[Shrines] MaxConcurrentChats` — max simultaneous shrine conversations (default 3)
+- [ ] `[Shrines] ThinkingMessages` — lore-friendly messages shown while waiting (list of strings)
 
 ---
 
@@ -163,9 +170,12 @@ src/
 │   ├── UlfgarSpirit.cs         # oracle spirit
 │   └── BriarSpirit.cs          # witch spirit
 ├── Services/
-│   └── ShrineLLMService.cs     # LLM integration for shrines
+│   ├── ShrineLLMService.cs     # LLM integration for shrines (own queue)
+│   └── ShrineMemoryManager.cs  # JSON persistence, memory pruning
+├── Managers/
+│   └── ShrineConversationManager.cs  # conversation state, history, focus
 └── Patches/
-    └── ShrineChatPatch.cs      # intercepts chat near active shrine
+    └── ShrineChatPatch.cs      # intercepts focused player chat only
 ```
 
 ---
@@ -178,9 +188,10 @@ src/
 - [ ] E to interact — detect keypress, activate shrine for that player
 
 ### Phase 2: Chat System
-- [ ] Basic chat routing — intercept chat when shrine active and player nearby
-- [ ] LLM integration — send/receive for one spirit type
-- [ ] Bubble response — display LLM response above shrine
+- [ ] Basic chat routing — intercept chat only when player is "focused"
+- [ ] LLM integration — send/receive for one spirit type (own queue)
+- [ ] Thinking indicator — lore-friendly message while waiting
+- [ ] Bubble response — display LLM response to focused player only
 
 ### Phase 3: Conversation System
 - [ ] Conversation history — store last 20 messages per shrine-session
