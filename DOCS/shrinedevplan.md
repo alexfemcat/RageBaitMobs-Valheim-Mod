@@ -39,14 +39,17 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 
 1. Player approaches shrine, presses **E**
 2. Spirit name text appears above shrine: **[Ulfgar the Oracle]**
-3. Player types in local chat normally
-4. Message is intercepted by mod (only when shrine is "active" and player is near)
-5. LLM receives: spirit personality + chat message
-6. Spirit responds via speech bubble above shrine
-7. Player can continue chatting or walk away
-8. After player is 8m+ away for 5s, spirit deactivates
+3. Spirit may greet unprompted: "Another fool seeks my wisdom. Speak."
+4. Player types in local chat normally
+5. Message is intercepted by mod (only when shrine is "active" and player is near)
+6. LLM receives: spirit personality + conversation history + player message
+7. Spirit responds via speech bubble above shrine
+8. Spirit may ask follow-up questions to keep conversation flowing
+9. Player can continue chatting or walk away
+10. After player is 8m+ away for 5s, spirit deactivates but remembers the player
+11. When player returns, spirit recalls previous conversation: "Back again. Couldn't stay away."
 
-**No commands needed**. Just chat.
+**No commands needed**. Just chat. Spirit handles the conversation.
 
 ---
 
@@ -77,13 +80,28 @@ Buildable shrine structures. Each shrine houses a trapped spirit. Press E to sum
 You are {SpiritName}, {SpiritPersonality}.
 You are bound to an ancient runestone. A mortal approaches to speak with you.
 Keep responses SHORT (1-2 sentences). Be in character.
+Ask follow-up questions. Don't just answer — ENGAGE.
 If asked about the future, give cryptic non-sequitur prophecies.
 If asked about lore, make up believable but absurd details.
+Sometimes say things unprompted. Keep conversation flowing.
+Reference earlier parts of the conversation.
 Never break character. Never mention being an AI.
+
+[Conversation History - last 20 messages]
+{history}
 
 [Player Message]
 {player_message}
 ```
+
+### Conversation System
+- [ ] **Conversation History**: Keep last 20 messages per shrine-session (player + spirit)
+- [ ] **Spirit Asks Questions**: Spirit doesn't just answer — it asks things too. "Oh really? Which mob hit you?" "And did you learn nothing from that?"
+- [ ] **Session Memory**: While shrine is active for a player, conversation continues naturally. Spirit tracks what you discussed.
+- [ ] **Player Recall**: Spirit remembers player across sessions (stored in JSON). Returns after 10 min? Spirit notices: "Thought you'd never come back."
+- [ ] **Proactive Interjection**: Sometimes spirit speaks unprompted after player message. "You seem troubled. Anyway, as I was saying..."
+- [ ] **JSON Persistence**: `shrines_memory.json` in config folder. Schema: `{ playerId -> shrineInstanceId -> { lastVisit, conversationNotes, flags } }`
+- [ ] **Memory Pruning**: Limit stored memories per player-shrine to 10KB. Prune old entries if exceeded.
 
 ---
 
@@ -164,14 +182,21 @@ src/
 - [ ] LLM integration — send/receive for one spirit type
 - [ ] Bubble response — display LLM response above shrine
 
-### Phase 3: Spirits
+### Phase 3: Conversation System
+- [ ] Conversation history — store last 20 messages per shrine-session
+- [ ] JSON persistence — save/load player memories across sessions
+- [ ] Spirit asks questions — update prompts to encourage follow-up questions
+- [ ] Proactive interjection — spirit occasionally speaks unprompted
+- [ ] Memory pruning — prevent unbounded JSON growth
+
+### Phase 4: Spirits
 - [ ] Spirit base class
 - [ ] Hralskuld the Defiant personality
 - [ ] Mira the Wanderer personality
 - [ ] Ulfgar the Oracle personality
 - [ ] Briar of the Burial Mound personality
 
-### Phase 4: Polish
+### Phase 5: Polish
 - [ ] State management — deactivation, proximity, one-player-at-a-time per shrine
 - [ ] Visual polish — particle colors, glow effects per spirit
 - [ ] Config options
@@ -185,5 +210,6 @@ src/
 |---|---|
 | 1 — Foundation | ⬜ pending |
 | 2 — Chat System | ⬜ pending |
-| 3 — Spirits | ⬜ pending |
-| 4 — Polish | ⬜ pending |
+| 3 — Conversation System | ⬜ pending |
+| 4 — Spirits | ⬜ pending |
+| 5 — Polish | ⬜ pending |
