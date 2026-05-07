@@ -16,8 +16,11 @@ A Valheim BepInEx mod that makes mobs trash-talk players using a local LLM (LM S
 - **Soft join dependency** — vanilla (unmodded) clients can still join your server. They can play normally; they just won't see the bubbles or trigger roasts. Crossplay is unaffected.
 - **In-world speech bubbles, not chat spam** — uses `Chat.SetNpcText` (the same API Ravens and Traders use). Bubbles appear above the mob, are cull-distance limited (30m default), have a 5-second TTL, and never enter the chat log.
 - **Per-mob cooldown** — same skeleton can't spam roasts. Configurable.
-- **Trigger types** — fires when a mob first targets a player (`spotted_player`) or when a player takes damage above a threshold (`took_damage`).
+- **Trigger types** — fires when a mob first targets a player (`spotted_player`), when a player takes damage (`took_damage`), or when a player dies (`player_died`).
 - **Fire-and-forget LLM calls** — never blocks the server tick; if LM Studio is offline or slow, the request just times out silently.
+- **Per-mob personalities** — 24+ mob types each have unique trash-talking voices (Troll speaks like an American bro, Greydwarf has a French accent, Draugr talks like a British Chav, etc.)
+- **Kill count shame** — tracks how many times each player has died to each mob type. Roasts get more personal the more they die.
+- **Insult intensity slider** — choose from Mild (playful), Normal (ragebait), Spicy (hostile), or XXXtreme (no restrictions).
 
 ## How it works
 
@@ -28,11 +31,12 @@ A Valheim BepInEx mod that makes mobs trash-talk players using a local LLM (LM S
 │  - patch detects event │
 └──────────┬─────────────┘
            │ RagebateMobs_RequestRoast (custom routed RPC)
-           │ payload: ZDOID, mobName, playerName, triggerType
+           │ payload: ZDOID, mobName, playerName, triggerType, mobType
            ▼
 ┌────────────────────────┐
 │ Server                 │
 │  - per-mob cooldown    │
+│  - kill count tracking │
 │  - calls LM Studio at  │
 │    localhost:1234/v1   │
 └──────────┬─────────────┘
@@ -90,10 +94,12 @@ The client doesn't need LM Studio, doesn't need configuration, and doesn't talk 
 ## Configuration
 
 Config file: `BepInEx/config/com.valheim.ragebatemobs.cfg`
+Kill counts file: `BepInEx/config/ragebatemobs_kills.json` (auto-generated)
 
 ```ini
 [General]
 Enabled = true            # master kill switch
+InsultIntensity = Normal  # Mild, Normal, Spicy, or XXXtreme
 
 [API]
 LLMModel = meta-llama-3.1-8b-instruct-abliterated
@@ -109,6 +115,13 @@ MinDamageThreshold = 5       # took_damage trigger only fires for hits >= this m
 [Debug]
 DebugLogging = false
 ```
+
+### Insult Intensity Levels
+
+- **Mild** — playful teasing, no swearing, keep it light
+- **Normal** — standard ragebait trash talk (default)
+- **Spicy** — heavy swearing, genuinely hostile
+- **XXXtreme** — no restrictions, 2 sentences allowed, maximum offense
 
 ## Soft dependency / Crossplay
 
@@ -142,17 +155,19 @@ src/
 │   └── ModConfig.cs                   # config bindings
 ├── Managers/
 │   ├── CooldownManager.cs             # ZDOID-keyed per-mob cooldown
+│   ├── KillCountManager.cs            # player death tracking + JSON persistence
 │   └── TaskManager.cs                 # SafeFireAndForgetAsync wrapper
 ├── Network/
 │   ├── RoastRpc.cs                    # custom routed RPCs (request + broadcast)
 │   └── MainThreadDispatcher.cs        # marshals HTTP-completion thread → Unity main thread
 ├── Patches/
 │   ├── MonsterAITargetingPatch.cs     # postfix on MonsterAI.DoAttack
-│   ├── CharacterDamagePatch.cs        # postfix on Character.ApplyDamage
+│   ├── CharacterDamagePatch.cs         # postfix on Character.ApplyDamage
+│   ├── PlayerDeathPatch.cs            # postfix on Character.ApplyDamage (player death)
 │   └── GameStartPatch.cs              # ZNet.Awake postfix → registers routed RPCs
 └── Services/
     ├── LLMService.cs                  # async HttpClient → LM Studio /v1/chat/completions
-    └── PromptBuilder.cs               # constraint + few-shot prompt
+    └── PromptBuilder.cs               # constraint + few-shot prompt + personalities
 ```
 
 ## Testing without a game
