@@ -13,7 +13,7 @@ A Valheim BepInEx mod that makes mobs trash-talk players using a local LLM (LM S
 
 - **AI-generated mob speech** via a local LM Studio server — no API keys, no remote calls, no telemetry. The model runs on the server host's machine.
 - **Hybrid client/server architecture** — modded clients detect events, the server makes the LLM call, all clients render the bubble. Only the server host needs LM Studio running.
-- **Soft join dependency** — vanilla (unmodded) clients can still join your server. They can play normally; they just won't see the bubbles or trigger roasts. Crossplay is unaffected.
+- **Soft join dependency** — vanilla (unmodded) clients can still join your server. They can play normally; they just can't trigger roasts. Modded clients see speech bubbles; vanilla clients see insults in their local chat instead.
 - **In-world speech bubbles, not chat spam** — uses `Chat.SetNpcText` (the same API Ravens and Traders use). Bubbles appear above the mob, are cull-distance limited (30m default), have a 5-second TTL, and never enter the chat log.
 - **Per-mob cooldown** — same skeleton can't spam roasts. Configurable.
 - **Trigger types** — fires when a mob first targets a player (`spotted_player`), when a player takes damage (`took_damage`), or when a player dies (`player_died`).
