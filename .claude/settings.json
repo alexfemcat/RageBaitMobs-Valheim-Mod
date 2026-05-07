@@ -19,7 +19,9 @@
       "Bash(grep -E \"^UpdateAI$\")",
       "Bash(chmod +x /home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/test_pipeline.sh)",
       "Bash(./test_pipeline.sh)",
-      "Bash(python3 test_roasts.py)"
+      "Bash(python3 test_roasts.py)",
+      "Bash(unzip -l RagebateMobs-Client-v1.0.0.zip)",
+      "Bash(unzip -l RagebateMobs-Server-v1.0.0.zip)"
     ],
     "additionalDirectories": [
       "/home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/TEST_SERVER/BepInEx/core",
