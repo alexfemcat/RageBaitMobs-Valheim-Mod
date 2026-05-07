@@ -31,9 +31,11 @@ namespace RagebateMobs.Patches
             string mobName = global::Localization.instance.Localize(mob.m_name);
             if (string.IsNullOrWhiteSpace(mobName)) mobName = mob.m_name;
 
+            string mobType = mob.name;
+
             string playerName = (target as Player)?.GetPlayerName() ?? "player";
 
-            RoastRpc.SendRequest(nv.GetZDO().m_uid, mobName, playerName, "spotted_player");
+            RoastRpc.SendRequest(nv.GetZDO().m_uid, mobName, playerName, "spotted_player", mobType);
         }
     }
 }

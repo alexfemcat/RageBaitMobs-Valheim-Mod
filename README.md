@@ -116,6 +116,11 @@ The mod registers two custom routed RPCs (`RagebateMobs_RequestRoast`, `Ragebate
 
 If you want every player on a public server to get the experience, share the mod with them. If you don't care, just install on the host and your own client. Both setups are supported.
 
+## Deploy paths (for reference)
+
+- **Test server:** `/home/catosaur/Documents/bots_n_coding/Valheim-Mods/RagebateMobs/TEST_SERVER`
+- **Steam install:** `/home/catosaur/.steam/debian-installation/steamapps/common/Valheim`
+
 ## Building from source
 
 Requires .NET SDK 6.0+ (for the `dotnet` CLI). Built target framework is `net472`.

@@ -31,7 +31,7 @@ namespace RagebateMobs.Network
         }
 
         // Called from CLIENT-side patches.
-        public static void SendRequest(ZDOID mobId, string mobName, string playerName, string triggerType)
+        public static void SendRequest(ZDOID mobId, string mobName, string playerName, string triggerType, string mobType = "")
         {
             if (ZRoutedRpc.instance == null) return;
             if (mobId == ZDOID.None) return;
@@ -41,6 +41,7 @@ namespace RagebateMobs.Network
             pkg.Write(mobName ?? "");
             pkg.Write(playerName ?? "");
             pkg.Write(triggerType ?? "");
+            pkg.Write(mobType ?? "");
 
             // 2-arg overload routes to the server peer automatically.
             ZRoutedRpc.instance.InvokeRoutedRPC(RequestRpc, pkg);
@@ -57,15 +58,16 @@ namespace RagebateMobs.Network
             var mobName = pkg.ReadString();
             var playerName = pkg.ReadString();
             var triggerType = pkg.ReadString();
+            var mobType = pkg.ReadString();
 
             if (mobId == ZDOID.None) return;
 
             if (!RagebateMobsPlugin.CooldownManager.CanMobSpeak(mobId)) return;
             RagebateMobsPlugin.CooldownManager.RecordMobSpeak(mobId);
 
-            RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} -> {playerName} ({triggerType}) requested by peer {sender}, generating roast");
+            RagebateMobsPlugin.Logger.LogInfo($"[Ragebait] {mobName} ({mobType}) -> {playerName} ({triggerType}) requested by peer {sender}, generating roast");
 
-            string prompt = PromptBuilder.BuildInsultPrompt(mobName, triggerType, playerName);
+            string prompt = PromptBuilder.BuildInsultPrompt(mobName, triggerType, playerName, mobType);
 
             RagebateMobsPlugin.TaskManager.SafeFireAndForgetAsync(async () =>
             {
